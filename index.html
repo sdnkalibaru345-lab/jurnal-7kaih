@@ -9,6 +9,7 @@
     .intro{margin-top:22px;background:linear-gradient(135deg,#ffffff,#f0fdf4);border:1px solid #d8eee4;border-radius:24px;padding:25px 27px;box-shadow:0 5px 18px #17352d0b}.intro .eyebrow{color:#047857}.intro h2{font-size:26px;letter-spacing:-.025em;margin:7px 0 10px}.intro p{max-width:960px;margin:0;color:#526660;line-height:1.75}.slideshow{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 5px 18px #17352d0b}.slideshow-frame{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:17px;background:#e7f3ed}.slideshow-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.slideshow-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 4px 1px}.slideshow-foot p{margin:0;color:var(--muted);font-size:14px}.slideshow-link{color:#047857;font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap}.slideshow-link:hover{text-decoration:underline}@media(max-width:560px){.intro{padding:21px}.intro h2{font-size:23px}.slideshow{padding:10px}.slideshow-foot{align-items:flex-start;flex-direction:column;gap:8px}}
     .slideshow-frame{background:linear-gradient(135deg,#064e3b,#0f766e);color:#fff;display:grid;place-items:center;text-align:center;padding:30px}.slide-placeholder{max-width:620px}.slide-placeholder span{display:inline-grid;place-items:center;width:68px;height:68px;border-radius:22px;background:#ffffff18;font-size:34px}.slide-placeholder h3{font-size:clamp(24px,4vw,38px);margin:18px 0 9px}.slide-placeholder p{margin:0;color:#c7f9e9;line-height:1.65}
     .step-page{min-height:calc(100vh - 76px);padding:34px 0 48px;display:grid;place-items:center}.step-card{width:min(900px,100%);background:#fff;border:1px solid var(--line);border-radius:30px;padding:clamp(25px,5vw,52px);box-shadow:0 20px 55px #17352d14}.step-card .eyebrow{color:#047857}.step-card h2{font-size:clamp(30px,5vw,48px);line-height:1.1;letter-spacing:-.04em;margin:12px 0 18px;color:#064e3b}.step-card>p{font-size:17px;line-height:1.85;color:#526660;margin:0}.step-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:30px}.slide-step{width:min(1000px,100%)}.slide-step .slideshow{margin-top:0}.step-note{margin-top:13px!important;font-size:13px!important;color:var(--muted)!important;text-align:center}@media(max-width:560px){.step-page{min-height:calc(100vh - 68px);padding:20px 0 34px}.step-card{border-radius:24px}.step-card>p{font-size:15px}.step-actions .primary{width:100%}}
+    .slide-step .slideshow-frame{padding:0;background:#f4eadb}.slide-step .slideshow-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.slide-navigation{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-top:18px}.slide-navigation .secondary,.slide-navigation .primary{min-width:150px}.slide-counter{text-align:center;font-weight:850;color:#526660}.slide-counter span{color:#047857}@media(max-width:560px){.slide-navigation{grid-template-columns:1fr 1fr}.slide-counter{grid-column:1/-1;grid-row:1}.slide-navigation .secondary,.slide-navigation .primary{min-width:0;width:100%;padding-left:8px;padding-right:8px}}
   </style>
 </head>
 <body>
@@ -46,6 +47,18 @@
     function showIntro(){switchPage(introPage)}function showSlideshow(){switchPage(slideshowPage)}function showHome(){switchPage(homePage)}
     function enterApp(){login.classList.add('hidden');app.classList.remove('hidden');showIntro();render()}
     function leaveApp(){app.classList.add('hidden');login.classList.remove('hidden');switchPage(introPage);window.scrollTo(0,0)}
+    const slideFrame=slideshowPage.querySelector('.slideshow-frame');
+    slideFrame.innerHTML='<iframe id="canvaSlides" src="https://www.canva.com/design/DAGuzkk79L8/OWwUuGBo2WG9UYEM4EjDNw/view#1" title="Slideshow 7 Kebiasaan Anak Indonesia Hebat" loading="eager" allowfullscreen></iframe>';
+    slideshowPage.querySelector('.slideshow-foot').remove();
+    const oldSlideActions=slideshowPage.querySelector('.step-actions');
+    oldSlideActions.className='slide-navigation';
+    oldSlideActions.innerHTML='<button id="prevSlide" class="secondary" onclick="previousSlide()">← Sebelumnya</button><div class="slide-counter">Halaman <span id="slideNumber">1</span> dari 9</div><button id="nextSlide" class="primary" onclick="nextSlide()">Selanjutnya →</button>';
+    let activeSlide=1;const totalSlides=9;
+    function renderSlide(){document.getElementById('canvaSlides').src='https://www.canva.com/design/DAGuzkk79L8/OWwUuGBo2WG9UYEM4EjDNw/view#'+activeSlide;document.getElementById('slideNumber').textContent=activeSlide;document.getElementById('prevSlide').disabled=activeSlide===1;document.getElementById('nextSlide').textContent=activeSlide===totalSlides?'Masuk ke Jurnal →':'Selanjutnya →'}
+    function previousSlide(){if(activeSlide>1){activeSlide--;renderSlide()}}
+    function nextSlide(){if(activeSlide<totalSlides){activeSlide++;renderSlide()}else{showHome()}}
+    function showSlideshow(){activeSlide=1;renderSlide();switchPage(slideshowPage)}
+    renderSlide();
   </script>
 </body>
 </html>
