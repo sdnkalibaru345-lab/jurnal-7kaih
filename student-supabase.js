@@ -13,13 +13,13 @@
   loginCard.innerHTML = `
     <span class="test" style="background:#d1fae5;color:#065f46">TERHUBUNG</span>
     <h2>Masuk ke jurnal</h2>
-    <p>Pilih kelas, ketik nama lengkap, lalu masukkan PIN siswa.</p>
+    <p>Pilih kelas dan nama siswa, lalu masukkan PIN.</p>
     <div class="field"><label for="studentClass">Kelas</label><select id="studentClass" class="control"><option value="">Memuat kelas...</option></select></div>
-    <div class="field"><label for="studentName">Nama siswa</label><input id="studentName" class="control" autocomplete="name" placeholder="Ketik nama lengkap"></div>
+    <div class="field"><label for="studentName">Nama siswa</label><select id="studentName" class="control" disabled><option value="">Pilih kelas terlebih dahulu</option></select></div>
     <div class="field"><label for="studentPin">PIN</label><input id="studentPin" class="control" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" pattern="[0-9]{6}" placeholder="6 digit PIN"></div>
     <p id="studentLoginError" class="hint" role="alert" style="display:none;color:#b91c1c;text-align:left"></p>
     <button id="studentLoginButton" class="primary wide" type="button">Masuk</button>
-    <p class="hint">Nama harus sama dengan data yang dimasukkan oleh admin.</p>`;
+    <p class="hint">Gunakan PIN yang diberikan oleh admin sekolah.</p>`;
 
   const classSelect = document.getElementById('studentClass');
   const nameInput = document.getElementById('studentName');
@@ -84,6 +84,25 @@
       .map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join('');
   }
 
+  async function loadStudentNames() {
+    const classId = classSelect.value;
+    nameInput.disabled = true;
+    nameInput.innerHTML = `<option value="">${classId ? 'Memuat nama siswa...' : 'Pilih kelas terlebih dahulu'}</option>`;
+    setLoginError();
+    if (!classId) return;
+    try {
+      const data = await studentApi('names', { classId }, null);
+      const names = data.names || [];
+      nameInput.innerHTML = '<option value="">Pilih nama siswa</option>' + names
+        .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      nameInput.disabled = names.length === 0;
+      if (!names.length) setLoginError('Belum ada siswa aktif pada kelas ini.');
+    } catch (error) {
+      nameInput.innerHTML = '<option value="">Nama siswa gagal dimuat</option>';
+      setLoginError(error.message);
+    }
+  }
+
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>'"]/g, char => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -145,7 +164,7 @@
     const pin = pinInput.value.trim();
     setLoginError();
     if (!classId || !name || !/^\d{6}$/.test(pin)) {
-      setLoginError('Pilih kelas, ketik nama lengkap, dan isi PIN 6 digit.');
+      setLoginError('Pilih kelas, pilih nama siswa, dan isi PIN 6 digit.');
       return;
     }
     setLoginBusy(true);
@@ -213,6 +232,7 @@
 
   window.enterApp = loginStudent;
   loginButton.addEventListener('click', loginStudent);
+  classSelect.addEventListener('change', loadStudentNames);
   pinInput.addEventListener('keydown', event => { if (event.key === 'Enter') loginStudent(); });
 
   window.leaveApp = async function () {
