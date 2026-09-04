@@ -365,7 +365,7 @@
     });
     c.fillStyle = '#000000'; setFont(c, 18, 500);
     c.fillText('Persentase = jumlah hari kebiasaan tercapai / total hari dalam bulan × 100%', 85, 1650);
-    setFont(c, 15, 500); c.fillText('Jurnal 7 Kebiasaan Anak Indonesia Hebat SDN Kalibaru 3', 85, 1695);
+    setFont(c, 15, 500); c.fillText('Diunduh dari Web Jurnal 7 Kebiasaan Anak Indonesia Hebat SDN Kalibaru 3', 85, 1695);
 
     const second = makePage(), d = second.ctx;
     d.fillStyle = '#ffffff'; d.fillRect(0, 0, W, 235);
@@ -383,7 +383,7 @@
     d.fillText('Terus lakukan kebiasaan baik setiap hari.', 105, 1518); setFont(d, 20, 500);
     d.fillText('Jurnal membantu kita mengenali perkembangan diri dan terus bertumbuh.', 105, 1563);
     d.fillStyle = '#000000'; setFont(d, 15, 500);
-    d.fillText('Jurnal 7 Kebiasaan Anak Indonesia Hebat SDN Kalibaru 3', 85, 1695);
+    d.fillText('Diunduh dari Web Jurnal 7 Kebiasaan Anak Indonesia Hebat SDN Kalibaru 3', 85, 1695);
 
     const toBytes = canvas => {
       const raw = atob(canvas.toDataURL('image/jpeg', .94).split(',')[1]);
