@@ -59,6 +59,6 @@
     function confirmImport(){if(!syncPlan||!confirm('Terapkan rencana sinkronisasi ini? Tidak ada riwayat yang akan dihapus.'))return;syncPlan.updates.forEach(({old,row})=>{old.name=row.name;old.classId=row.classId;old.active=true});syncPlan.additions.forEach((row,index)=>{let pin=securePin();while(students.some(s=>s.pin===pin))pin=securePin();students.push({id:'s'+Date.now()+'-'+index,name:row.name,classId:row.classId,pin,active:true})});syncPlan.deactivations.forEach(s=>s.active=false);save();closeDialog();render()}
     function toggleStudent(id){const s=students.find(x=>x.id===id);s.active=!s.active;save();render()}function toggleClass(id){const c=classes.find(x=>x.id===id);c.active=!c.active;save();render()}function closeDialog(){backdrop.classList.add('hidden')}render();
   </script>
-  <script src="admin-supabase.js"></script>
+  <script src="admin-supabase.js?v=2"></script>
 </body>
 </html>
