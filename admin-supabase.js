@@ -47,7 +47,7 @@
   async function loadCloudData() {
     const data = await adminApi('list');
     classes = data.classes.map(item => ({ id: item.id, name: item.name, active: item.is_active }));
-    students = data.students.map(item => ({ id: item.id, name: item.name, classId: item.class_id, active: item.is_active, pin: item.pin_last_two ? `0000${item.pin_last_two}` : '' }));
+    students = data.students.map(item => ({ id: item.id, name: item.name, classId: item.class_id, active: item.is_active, pin: item.pin || '' }));
     render();
   }
   function showError(message) {
@@ -86,21 +86,17 @@
   window.save = () => {};
   window.openStudent = function (id = '') {
     const student = students.find(item => item.id === id) || { name: '', classId: '', active: true };
-    dialog.innerHTML = `<div class="dialog-head"><h2>${id ? 'Edit siswa' : 'Tambah siswa'}</h2><p>PIN baru hanya ditampilkan sekali setelah disimpan.</p></div><form onsubmit="submitStudent(event,'${id}')"><div class="dialog-body"><div class="field"><label>Nama lengkap</label><input required name="name" class="control" value="${esc(student.name)}"></div><div class="field"><label>Kelas</label><select required name="classId" class="control"><option value="">Pilih kelas</option>${classes.filter(item => item.active || item.id === student.classId).map(item => `<option value="${item.id}" ${item.id === student.classId ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select></div><div class="field"><label>${id ? 'Ganti PIN (kosongkan jika tetap)' : 'PIN 6 digit (opsional)'}</label><input name="pin" class="control" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"></div><label class="switch-row"><span><strong>Siswa aktif</strong><small>Dapat masuk dan mengisi jurnal.</small></span><input name="active" type="checkbox" ${student.active ? 'checked' : ''}></label><div id="cloudDialogError" class="import-errors hidden"></div></div><div class="dialog-foot"><button type="button" class="btn" onclick="closeDialog()">Batal</button><button class="btn primary">Simpan siswa</button></div></form>`;
+    dialog.innerHTML = `<div class="dialog-head"><h2>${id ? 'Edit siswa' : 'Tambah siswa'}</h2><p>${id ? 'Perubahan nama atau kelas tidak mengubah PIN siswa.' : 'PIN dibuat otomatis jika kolom PIN dikosongkan.'}</p></div><form onsubmit="submitStudent(event,'${id}')"><div class="dialog-body"><div class="field"><label>Nama lengkap</label><input required name="name" class="control" value="${esc(student.name)}"></div><div class="field"><label>Kelas</label><select required name="classId" class="control"><option value="">Pilih kelas</option>${classes.filter(item => item.active || item.id === student.classId).map(item => `<option value="${item.id}" ${item.id === student.classId ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select></div>${id ? (student.pin ? `<div class="import-note"><strong>PIN aktif: ${esc(student.pin)}</strong><br>PIN tetap sama meskipun kelas siswa diubah.</div>` : '<div class="field"><label>PIN aktif saat ini *</label><input required name="existingPin" class="control" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Masukkan sekali untuk ditampilkan di panel"><small>PIN diverifikasi tanpa mengubah PIN login siswa.</small></div>') : '<div class="field"><label>PIN 6 digit (opsional)</label><input name="pin" class="control" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"></div>'}<label class="switch-row"><span><strong>Siswa aktif</strong><small>Dapat masuk dan mengisi jurnal.</small></span><input name="active" type="checkbox" ${student.active ? 'checked' : ''}></label><div id="cloudDialogError" class="import-errors hidden"></div></div><div class="dialog-foot"><button type="button" class="btn" onclick="closeDialog()">Batal</button><button class="btn primary">Simpan siswa</button></div></form>`;
     backdrop.classList.remove('hidden');
   };
   window.submitStudent = async function (event, id) {
     event.preventDefault(); const button = event.submitter, form = new FormData(event.currentTarget); button.disabled = true;
     try {
-      const result = await adminApi('saveStudent', { id, name: form.get('name'), classId: form.get('classId'), pin: form.get('pin'), isActive: form.get('active') === 'on' });
+      const result = await adminApi('saveStudent', { id, name: form.get('name'), classId: form.get('classId'), pin: form.get('pin'), existingPin: form.get('existingPin'), isActive: form.get('active') === 'on' });
       closeDialog(); await loadCloudData();
-      if (result.generatedPin) alert(`PIN baru ${form.get('name')}: ${result.generatedPin}\nSimpan dan berikan kepada orang tua siswa.`);
+      if (result.generatedPin) alert(`PIN ${form.get('name')}: ${result.generatedPin}`);
     } catch (error) { const box = document.getElementById('cloudDialogError'); box.textContent = error.message; box.classList.remove('hidden'); }
     finally { button.disabled = false; }
-  };
-  window.resetPin = async function (id) {
-    const student = students.find(item => item.id === id); if (!student || !confirm(`Buat PIN baru untuk ${student.name}?`)) return;
-    try { const result = await adminApi('resetPin', { id }); await loadCloudData(); alert(`PIN baru ${student.name}: ${result.generatedPin}\nPIN lama sudah tidak berlaku.`); } catch (error) { alert(error.message); }
   };
   window.toggleStudent = async function (id) {
     const student = students.find(item => item.id === id); if (!student) return;
