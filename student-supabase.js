@@ -352,38 +352,38 @@
     c.fillStyle = '#ffffff'; c.fillRect(0, 0, W, 270);
     c.strokeStyle = '#111111'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 269); c.lineTo(W, 269); c.stroke();
     c.drawImage(schoolLogo, 75, 55, 135, 134); c.drawImage(programLogo, 845, 75, 320, 94);
-    c.fillStyle = '#172b26'; setFont(c, 46, 800); c.fillText('CAPAIAN 7 KAIH', 245, 125);
+    c.fillStyle = '#000000'; setFont(c, 46, 800); c.fillText('CAPAIAN 7 KAIH', 245, 125);
     setFont(c, 34, 700); c.fillText('SDN Kalibaru 3', 245, 178);
-    c.fillStyle = '#172b26'; setFont(c, 38, 800); c.fillText(periodName, 85, 350);
-    c.fillStyle = '#526660'; setFont(c, 32, 700); c.fillText(studentName, 85, 400);
+    c.fillStyle = '#000000'; setFont(c, 38, 800); c.fillText(periodName, 85, 350);
+    c.fillStyle = '#000000'; setFont(c, 32, 700); c.fillText(studentName, 85, 400);
     scores.forEach((item, index) => {
       const y = 485 + index * 145;
-      c.fillStyle = '#172b26'; setFont(c, 25, 700); c.fillText(item.label, 85, y);
+      c.fillStyle = '#000000'; setFont(c, 25, 700); c.fillText(item.label, 85, y);
       c.textAlign = 'right'; setFont(c, 38, 800); c.fillText(item.percent + '%', 1145, y + 5); c.textAlign = 'left';
       box(c, 420, y - 28, 620, 32, '#e5eee9'); box(c, 420, y - 28, 620 * item.percent / 100, 32, '#07865f');
-      c.fillStyle = '#63736e'; setFont(c, 18, 500); c.fillText(`${item.count} dari ${days} hari tercapai`, 85, y + 39);
+      c.fillStyle = '#000000'; setFont(c, 18, 500); c.fillText(`${item.count} dari ${days} hari tercapai`, 85, y + 39);
     });
-    c.fillStyle = '#63736e'; setFont(c, 18, 500);
+    c.fillStyle = '#000000'; setFont(c, 18, 500);
     c.fillText('Persentase = jumlah hari kebiasaan tercapai / total hari dalam bulan × 100%', 85, 1650);
-    setFont(c, 15, 500); c.fillText('Diunduh dari sdnkalibaru345-lab.github.io/jurnal-7kaih/', 85, 1695);
+    setFont(c, 15, 500); c.fillText('Jurnal 7 Kebiasaan Anak Indonesia Hebat SDN Kalibaru 3', 85, 1695);
 
     const second = makePage(), d = second.ctx;
     d.fillStyle = '#ffffff'; d.fillRect(0, 0, W, 235);
     d.strokeStyle = '#111111'; d.lineWidth = 3; d.beginPath(); d.moveTo(0, 234); d.lineTo(W, 234); d.stroke();
-    d.fillStyle = '#172b26'; setFont(d, 45, 800); d.fillText('REFLEKSI DAN KOMENTAR GURU', 85, 115);
+    d.fillStyle = '#000000'; setFont(d, 45, 800); d.fillText('REFLEKSI DAN KOMENTAR GURU', 85, 115);
     setFont(d, 32, 700); d.fillText(studentName + ' · ' + periodName, 85, 172);
-    d.fillStyle = '#172b26'; setFont(d, 34, 800); d.fillText('Refleksi Diri', 85, 330);
-    box(d, 70, 375, 1100, 360, '#f0f7f4'); d.fillStyle = '#172b26'; setFont(d, 25, 700);
+    d.fillStyle = '#000000'; setFont(d, 34, 800); d.fillText('Refleksi Diri', 85, 330);
+    box(d, 70, 375, 1100, 360, '#f0f7f4'); d.fillStyle = '#000000'; setFont(d, 25, 700);
     let y = wrap(d, 'Hal yang harus ku tingkatkan: ' + (low.length ? low.join(', ') : 'Tidak ada.'), 105, 440, 1030, 39) + 55;
     wrap(d, 'Aku sudah baik dalam: ' + (good.length ? good.join(', ') : 'Belum ada.'), 105, y, 1030, 39);
     setFont(d, 34, 800); d.fillText('Komentar Guru', 85, 850);
-    box(d, 70, 895, 1100, 465, '#fff7dc'); d.fillStyle = '#172b26'; setFont(d, 25, 600);
+    box(d, 70, 895, 1100, 465, '#fff7dc'); d.fillStyle = '#000000'; setFont(d, 25, 600);
     wrap(d, comment, 105, 965, 1030, 42);
-    box(d, 70, 1455, 1100, 150, '#e9f5ef'); d.fillStyle = '#087052'; setFont(d, 24, 700);
+    box(d, 70, 1455, 1100, 150, '#e9f5ef'); d.fillStyle = '#000000'; setFont(d, 24, 700);
     d.fillText('Terus lakukan kebiasaan baik setiap hari.', 105, 1518); setFont(d, 20, 500);
     d.fillText('Jurnal membantu kita mengenali perkembangan diri dan terus bertumbuh.', 105, 1563);
-    d.fillStyle = '#63736e'; setFont(d, 15, 500);
-    d.fillText('Diunduh dari sdnkalibaru345-lab.github.io/jurnal-7kaih/', 85, 1695);
+    d.fillStyle = '#000000'; setFont(d, 15, 500);
+    d.fillText('Jurnal 7 Kebiasaan Anak Indonesia Hebat SDN Kalibaru 3', 85, 1695);
 
     const toBytes = canvas => {
       const raw = atob(canvas.toDataURL('image/jpeg', .94).split(',')[1]);
