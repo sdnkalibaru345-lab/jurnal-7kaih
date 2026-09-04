@@ -266,6 +266,10 @@
       showSendMessage('Isian belum siap dikirim', 'Buka dan simpan kembali setiap aspek jurnal.');
       return;
     }
+    answers.orangtua = {
+      name: String(answers.orangtua?.name || '').trim(),
+      confirmed: true
+    };
     sending = true;
     const sendButton = document.getElementById('send');
     sendButton.disabled = true;
@@ -290,6 +294,119 @@
       sendButton.textContent = original;
       sendButton.disabled = done.size < 8;
     }
+  };
+
+  window.downloadMonthlyPDF = async function (periodKey) {
+    await document.fonts.load('700 24px Inter');
+    const [year, monthNumber] = periodKey.split('-').map(Number);
+    const month = monthNumber - 1;
+    const period = new Date(year, month, 1);
+    const days = new Date(year, month + 1, 0).getDate();
+    const aspects = [
+      ['bangun', 'Bangun Pagi'], ['ibadah', 'Taat Beribadah'],
+      ['olahraga', 'Rajin Berolahraga'], ['makan', 'Makan Sehat dan Bergizi'],
+      ['belajar', 'Gemar Belajar'], ['masyarakat', 'Bermasyarakat'],
+      ['tidur', 'Tidur Cepat']
+    ];
+    const scores = aspects.map(([id, label]) => {
+      let count = 0;
+      for (let day = 1; day <= days; day++) {
+        if (achievementByDate[dateKey(new Date(year, month, day, 12))]?.[id] === true) count++;
+      }
+      return { label, count, percent: Math.round(count / days * 100) };
+    });
+    const low = scores.filter(item => item.percent < 70).map(item => item.label);
+    const good = scores.filter(item => item.percent >= 70).map(item => item.label);
+    const periodName = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(period);
+    const studentName = document.querySelector('.welcome h2').textContent.replace(/^Halo,\s*/, '').replace(/!$/, '').trim();
+    const safeStudent = studentName.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const comment = good.length > low.length
+      ? 'Kamu sudah menunjukkan perkembangan yang baik dalam menerapkan 7 Kebiasaan Anak Indonesia Hebat. Sebagian besar kebiasaanmu sudah konsisten di atas 70%. Pertahankan dan terus tingkatkan, terutama pada kebiasaan yang masih perlu perhatian lebih. Kerja bagus, terus semangat jadi pribadi hebat!'
+      : 'Kamu masih perlu meningkatkan konsistensi dalam menerapkan 7 Kebiasaan Anak Indonesia Hebat. Beberapa kebiasaan sudah mulai terlihat, namun sebagian besar masih di bawah 70%. Ayo semangat memperbaiki dan membiasakan diri dengan hal-hal positif setiap hari. Bapak dan Ibu guru yakin kamu bisa lebih baik lagi!';
+    const W = 1240, H = 1754;
+    const loadImage = src => new Promise((resolve, reject) => {
+      const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src;
+    });
+    const [schoolLogo, programLogo] = await Promise.all([loadImage('assets/logo-kb3.jpg'), loadImage('assets/logo-7kaih.jpg')]);
+    const makePage = () => {
+      const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+      return { canvas, ctx };
+    };
+    const setFont = (ctx, size, weight = 600) => { ctx.font = `${weight} ${size}px Inter`; };
+    const box = (ctx, x, y, width, height, color) => {
+      ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect(x, y, width, height, 24); ctx.fill();
+    };
+    const wrap = (ctx, text, x, y, width, step) => {
+      let line = ''; const lines = [];
+      for (const word of text.split(' ')) {
+        const test = (line + ' ' + word).trim();
+        if (line && ctx.measureText(test).width > width) { lines.push(line); line = word; } else line = test;
+      }
+      if (line) lines.push(line);
+      lines.forEach((value, index) => ctx.fillText(value, x, y + index * step));
+      return y + lines.length * step;
+    };
+
+    const first = makePage(), c = first.ctx;
+    c.fillStyle = '#0B9A70'; c.fillRect(0, 0, W, 270);
+    c.drawImage(schoolLogo, 75, 55, 135, 134); c.drawImage(programLogo, 845, 75, 320, 94);
+    c.fillStyle = '#fff'; setFont(c, 46, 800); c.fillText('CAPAIAN 7 KAIH', 245, 125);
+    setFont(c, 34, 700); c.fillText('SDN Kalibaru 3', 245, 178);
+    c.fillStyle = '#172b26'; setFont(c, 38, 800); c.fillText(periodName, 85, 350);
+    c.fillStyle = '#526660'; setFont(c, 32, 700); c.fillText(studentName, 85, 400);
+    scores.forEach((item, index) => {
+      const y = 485 + index * 145;
+      c.fillStyle = '#172b26'; setFont(c, 25, 700); c.fillText(item.label, 85, y);
+      c.textAlign = 'right'; setFont(c, 38, 800); c.fillText(item.percent + '%', 1145, y + 5); c.textAlign = 'left';
+      box(c, 420, y - 28, 620, 32, '#e5eee9'); box(c, 420, y - 28, 620 * item.percent / 100, 32, '#07865f');
+      c.fillStyle = '#63736e'; setFont(c, 18, 500); c.fillText(`${item.count} dari ${days} hari tercapai`, 85, y + 39);
+    });
+    c.fillStyle = '#63736e'; setFont(c, 18, 500);
+    c.fillText('Persentase = jumlah hari kebiasaan tercapai / total hari dalam bulan × 100%', 85, 1650);
+
+    const second = makePage(), d = second.ctx;
+    d.fillStyle = '#0B9A70'; d.fillRect(0, 0, W, 235);
+    d.fillStyle = '#fff'; setFont(d, 45, 800); d.fillText('REFLEKSI DAN KOMENTAR GURU', 85, 115);
+    setFont(d, 32, 700); d.fillText(studentName + ' · ' + periodName, 85, 172);
+    d.fillStyle = '#172b26'; setFont(d, 34, 800); d.fillText('Refleksi Diri', 85, 330);
+    box(d, 70, 375, 1100, 360, '#f0f7f4'); d.fillStyle = '#172b26'; setFont(d, 25, 700);
+    let y = wrap(d, 'Hal yang harus ku tingkatkan: ' + (low.length ? low.join(', ') : 'Tidak ada.'), 105, 440, 1030, 39) + 55;
+    wrap(d, 'Aku sudah baik dalam: ' + (good.length ? good.join(', ') : 'Belum ada.'), 105, y, 1030, 39);
+    setFont(d, 34, 800); d.fillText('Komentar Guru', 85, 850);
+    box(d, 70, 895, 1100, 465, '#fff7dc'); d.fillStyle = '#172b26'; setFont(d, 25, 600);
+    wrap(d, comment, 105, 965, 1030, 42);
+    box(d, 70, 1455, 1100, 150, '#e9f5ef'); d.fillStyle = '#087052'; setFont(d, 24, 700);
+    d.fillText('Terus lakukan kebiasaan baik setiap hari.', 105, 1518); setFont(d, 20, 500);
+    d.fillText('Jurnal membantu kita mengenali perkembangan diri dan terus bertumbuh.', 105, 1563);
+
+    const toBytes = canvas => {
+      const raw = atob(canvas.toDataURL('image/jpeg', .94).split(',')[1]);
+      const bytes = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+      return bytes;
+    };
+    const pictures = [toBytes(first.canvas), toBytes(second.canvas)], encode = value => new TextEncoder().encode(value);
+    const chunks = [], offsets = [0]; let length = 0;
+    const push = value => { const bytes = typeof value === 'string' ? encode(value) : value; chunks.push(bytes); length += bytes.length; };
+    const object = (number, value) => { offsets[number] = length; push(`${number} 0 obj\n${value}\nendobj\n`); };
+    const imageObject = (number, bytes) => {
+      offsets[number] = length;
+      push(`${number} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${W} /Height ${H} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${bytes.length} >>\nstream\n`);
+      push(bytes); push('\nendstream\nendobj\n');
+    };
+    push('%PDF-1.4\n'); object(1, '<< /Type /Catalog /Pages 2 0 R >>');
+    object(2, '<< /Type /Pages /Kids [3 0 R 6 0 R] /Count 2 >>');
+    object(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /P 4 0 R >> >> /Contents 5 0 R >>');
+    imageObject(4, pictures[0]); object(5, '<< /Length 32 >>\nstream\nq 595 0 0 842 0 0 cm /P Do Q\nendstream');
+    object(6, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /P 7 0 R >> >> /Contents 8 0 R >>');
+    imageObject(7, pictures[1]); object(8, '<< /Length 32 >>\nstream\nq 595 0 0 842 0 0 cm /P Do Q\nendstream');
+    const xref = length; push('xref\n0 9\n0000000000 65535 f \n');
+    for (let i = 1; i <= 8; i++) push(`${String(offsets[i]).padStart(10, '0')} 00000 n \n`);
+    push(`trailer\n<< /Size 9 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+    const blob = new Blob(chunks, { type: 'application/pdf' }), link = document.createElement('a');
+    const monthFile = new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(period);
+    link.href = URL.createObjectURL(blob); link.download = `Capaian-Jurnal7Kaih-${monthFile}-${year}-${safeStudent}.pdf`; link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1500);
   };
 
   async function start() {
