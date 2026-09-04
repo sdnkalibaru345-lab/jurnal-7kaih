@@ -327,7 +327,7 @@
     const loadImage = src => new Promise((resolve, reject) => {
       const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src;
     });
-    const [schoolLogo, programLogo] = await Promise.all([loadImage('assets/logo-kb3.jpg'), loadImage('assets/logo-7kaih.jpg')]);
+    const [schoolLogo, programLogo] = await Promise.all([loadImage('assets/logo-kb3.png'), loadImage('assets/logo-7kaih.png')]);
     const makePage = () => {
       const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
@@ -364,6 +364,7 @@
     });
     c.fillStyle = '#63736e'; setFont(c, 18, 500);
     c.fillText('Persentase = jumlah hari kebiasaan tercapai / total hari dalam bulan × 100%', 85, 1650);
+    setFont(c, 15, 500); c.fillText('Diunduh dari sdnkalibaru345-lab.github.io/jurnal-7kaih/', 85, 1695);
 
     const second = makePage(), d = second.ctx;
     d.fillStyle = '#0B9A70'; d.fillRect(0, 0, W, 235);
@@ -379,6 +380,8 @@
     box(d, 70, 1455, 1100, 150, '#e9f5ef'); d.fillStyle = '#087052'; setFont(d, 24, 700);
     d.fillText('Terus lakukan kebiasaan baik setiap hari.', 105, 1518); setFont(d, 20, 500);
     d.fillText('Jurnal membantu kita mengenali perkembangan diri dan terus bertumbuh.', 105, 1563);
+    d.fillStyle = '#63736e'; setFont(d, 15, 500);
+    d.fillText('Diunduh dari sdnkalibaru345-lab.github.io/jurnal-7kaih/', 85, 1695);
 
     const toBytes = canvas => {
       const raw = atob(canvas.toDataURL('image/jpeg', .94).split(',')[1]);
