@@ -213,10 +213,9 @@
       }
     };
     if (current.kind === 'signature') {
-      const canvas = document.getElementById('signaturePad');
       return {
         name: modal.querySelector('.field input').value.trim(),
-        signature: canvas.toDataURL('image/webp', 0.55)
+        confirmed: true
       };
     }
     return {};
