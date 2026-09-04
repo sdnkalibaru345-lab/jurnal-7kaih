@@ -349,9 +349,10 @@
     };
 
     const first = makePage(), c = first.ctx;
-    c.fillStyle = '#0B9A70'; c.fillRect(0, 0, W, 270);
+    c.fillStyle = '#ffffff'; c.fillRect(0, 0, W, 270);
+    c.strokeStyle = '#111111'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 269); c.lineTo(W, 269); c.stroke();
     c.drawImage(schoolLogo, 75, 55, 135, 134); c.drawImage(programLogo, 845, 75, 320, 94);
-    c.fillStyle = '#fff'; setFont(c, 46, 800); c.fillText('CAPAIAN 7 KAIH', 245, 125);
+    c.fillStyle = '#172b26'; setFont(c, 46, 800); c.fillText('CAPAIAN 7 KAIH', 245, 125);
     setFont(c, 34, 700); c.fillText('SDN Kalibaru 3', 245, 178);
     c.fillStyle = '#172b26'; setFont(c, 38, 800); c.fillText(periodName, 85, 350);
     c.fillStyle = '#526660'; setFont(c, 32, 700); c.fillText(studentName, 85, 400);
@@ -367,8 +368,9 @@
     setFont(c, 15, 500); c.fillText('Diunduh dari sdnkalibaru345-lab.github.io/jurnal-7kaih/', 85, 1695);
 
     const second = makePage(), d = second.ctx;
-    d.fillStyle = '#0B9A70'; d.fillRect(0, 0, W, 235);
-    d.fillStyle = '#fff'; setFont(d, 45, 800); d.fillText('REFLEKSI DAN KOMENTAR GURU', 85, 115);
+    d.fillStyle = '#ffffff'; d.fillRect(0, 0, W, 235);
+    d.strokeStyle = '#111111'; d.lineWidth = 3; d.beginPath(); d.moveTo(0, 234); d.lineTo(W, 234); d.stroke();
+    d.fillStyle = '#172b26'; setFont(d, 45, 800); d.fillText('REFLEKSI DAN KOMENTAR GURU', 85, 115);
     setFont(d, 32, 700); d.fillText(studentName + ' · ' + periodName, 85, 172);
     d.fillStyle = '#172b26'; setFont(d, 34, 800); d.fillText('Refleksi Diri', 85, 330);
     box(d, 70, 375, 1100, 360, '#f0f7f4'); d.fillStyle = '#172b26'; setFont(d, 25, 700);
