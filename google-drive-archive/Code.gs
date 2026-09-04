@@ -9,7 +9,7 @@ function doGet() {
 function doPost(event) {
   try {
     const body = JSON.parse(event && event.postData && event.postData.contents || '{}');
-    const expectedSecret = 'a88a0c5d6fb12f8adef94c7f525f3c6026d41a9cc13f3071';
+    const expectedSecret = PropertiesService.getScriptProperties().getProperty('ARCHIVE_SECRET');
 
     if (!expectedSecret || body.secret !== expectedSecret) {
       return jsonResponse_({ ok: false, error: 'Akses ditolak.' });
