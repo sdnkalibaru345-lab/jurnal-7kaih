@@ -41,6 +41,10 @@
     #introPage .step-card{min-height:calc(100dvh - 158px);display:flex;flex-direction:column}
     #introPage .step-actions{margin-top:auto;padding-top:32px}
     #downloadWindow,.recap-body .legend{display:none!important}
+    .calendar-day.fillable[role="button"]{cursor:pointer;box-shadow:inset 0 0 0 1px #f4c94e;transition:transform .15s,box-shadow .15s}
+    .calendar-day.fillable[role="button"]:active{transform:scale(.96)}
+    .calendar-day.fillable[role="button"]:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+    .recap-fillable-hint{margin:16px 0 0;padding:11px 13px;border-radius:12px;background:#fef3c7;color:#7c4a03;font-size:12px;font-weight:650;line-height:1.5}
     @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
     @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}}
   `;
@@ -113,6 +117,47 @@
   }
 
   reminderButton?.addEventListener('click', enableReminders);
+
+  function openFillableJournal(day, visibleMonth) {
+    const candidate = [0, 1, 2, 3].map(offset => {
+      const value = new Date(today);
+      value.setDate(today.getDate() - offset);
+      return value;
+    }).find(value => value.getDate() === day
+      && new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(value) === visibleMonth);
+    if (!candidate) return;
+    closeModal();
+    showHome();
+    selectJournalDate(dateKey(candidate));
+    setTimeout(() => document.querySelector('.date-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  }
+
+  function enhanceRecapCalendar() {
+    const grid = modal.querySelector('.calendar-grid');
+    if (!grid) return;
+    const visibleMonth = modal.querySelector('.month-nav h3')?.textContent.trim() || '';
+    grid.querySelectorAll('.calendar-day.fillable').forEach(cell => {
+      if (cell.dataset.fillableReady) return;
+      cell.dataset.fillableReady = 'true';
+      cell.setAttribute('role', 'button');
+      cell.setAttribute('tabindex', '0');
+      cell.setAttribute('aria-label', `Isi jurnal tanggal ${cell.querySelector('strong')?.textContent || ''} ${visibleMonth}`);
+      const activate = () => openFillableJournal(Number(cell.querySelector('strong')?.textContent), visibleMonth);
+      cell.addEventListener('click', activate);
+      cell.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate();
+        }
+      });
+    });
+    const recapBody = grid.closest('.recap-body');
+    if (recapBody && !recapBody.querySelector('.recap-fillable-hint')) {
+      grid.insertAdjacentHTML('afterend', '<p class="recap-fillable-hint">Ketuk tanggal berwarna kuning untuk memilih tanggal tersebut dan mengisi jurnal.</p>');
+    }
+  }
+
+  new MutationObserver(enhanceRecapCalendar).observe(modal, { childList: true, subtree: true });
 
   let recapTouchStartX = 0;
   let recapTouchStartY = 0;
