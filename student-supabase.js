@@ -143,7 +143,6 @@
       cell.setAttribute('tabindex', '0');
       cell.setAttribute('aria-label', `Isi jurnal tanggal ${cell.querySelector('strong')?.textContent || ''} ${visibleMonth}`);
       const activate = () => openFillableJournal(Number(cell.querySelector('strong')?.textContent), visibleMonth);
-      cell.addEventListener('click', activate);
       cell.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
@@ -158,6 +157,12 @@
   }
 
   new MutationObserver(enhanceRecapCalendar).observe(modal, { childList: true, subtree: true });
+  modal.addEventListener('click', event => {
+    const cell = event.target.closest?.('.calendar-day.fillable');
+    if (!cell || !modal.contains(cell)) return;
+    const visibleMonth = modal.querySelector('.month-nav h3')?.textContent.trim() || '';
+    openFillableJournal(Number(cell.querySelector('strong')?.textContent), visibleMonth);
+  });
 
   let recapTouchStartX = 0;
   let recapTouchStartY = 0;
