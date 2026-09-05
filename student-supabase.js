@@ -4,6 +4,7 @@
   const SUPABASE_URL = 'https://jwqrojjyrcevyvcdlsjy.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_-fxedCs7T1lzP8hzAlyOYw_vJPLP68P';
   const SESSION_KEY = 'j7-student-session-v1';
+  const VAPID_PUBLIC_KEY = 'BBObhvP0qRN0yBAqChymWR2raH_uLc901SvNAyjkHuBnEAmkXHcbOaNzszTb7A41Q2yjF9mEIu1xdJJ2D3poT2k';
   const draftsByDate = {};
   let session = readSession();
   let classes = [];
@@ -32,8 +33,81 @@
     #studentLoginError.show{display:block!important}
     .control:disabled,.primary:disabled{cursor:not-allowed}
     .sync-note{font-size:12px;color:#63736e;margin-top:8px}
+    .reminder-card{margin:12px 0 0;background:#fff7dc;border:1px solid #f1d98a;border-radius:20px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 4px 14px #17352d0b}
+    .reminder-card h3{font-size:16px;margin:0 0 4px;color:#3f3210}.reminder-card p{font-size:13px;line-height:1.45;margin:0;color:#6e5b27}
+    .reminder-button{flex:0 0 auto;border:0;border-radius:12px;min-height:44px;padding:10px 15px;background:#047857;color:#fff;font-weight:800;cursor:pointer}
+    .reminder-button:disabled{opacity:.65;cursor:not-allowed}.reminder-card.active{background:#ecfdf5;border-color:#a7dfc7}.reminder-card.active h3{color:#065f46}.reminder-card.active p{color:#39715f}
+    @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
   `;
   document.head.appendChild(style);
+
+  const journalTools = document.querySelector('.journal-tools');
+  const reminderCard = document.createElement('section');
+  reminderCard.className = 'reminder-card';
+  reminderCard.innerHTML = `<div><h3>🔔 Pengingat jurnal</h3><p id="reminderStatus">Aktifkan notifikasi untuk diingatkan setiap pukul 20.00 WIB bila jurnal hari ini hingga 3 hari sebelumnya belum lengkap.</p></div><button id="reminderButton" class="reminder-button" type="button">Aktifkan Pengingat</button>`;
+  journalTools?.after(reminderCard);
+  const reminderButton = document.getElementById('reminderButton');
+  const reminderStatus = document.getElementById('reminderStatus');
+
+  function vapidKeyBytes(value) {
+    const padding = '='.repeat((4 - value.length % 4) % 4);
+    const raw = atob((value + padding).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(raw, char => char.charCodeAt(0));
+  }
+
+  function setReminderState(active, message) {
+    reminderCard.classList.toggle('active', active);
+    reminderStatus.textContent = message;
+    reminderButton.textContent = active ? '✓ Pengingat Aktif' : 'Aktifkan Pengingat';
+    reminderButton.disabled = active;
+  }
+
+  async function refreshReminderState() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      setReminderState(false, 'Perangkat atau browser ini belum mendukung notifikasi pengingat.');
+      reminderButton.disabled = true;
+      return;
+    }
+    try {
+      const registration = await navigator.serviceWorker.getRegistration('./');
+      const subscription = await registration?.pushManager.getSubscription();
+      if (subscription && Notification.permission === 'granted') {
+        setReminderState(true, 'Pengingat aktif. Notifikasi dikirim pukul 20.00 WIB bila ada jurnal yang belum lengkap.');
+      } else if (Notification.permission === 'denied') {
+        setReminderState(false, 'Notifikasi diblokir. Izinkan notifikasi untuk situs ini melalui pengaturan browser.');
+        reminderButton.disabled = true;
+      }
+    } catch (_) {}
+  }
+
+  async function enableReminders() {
+    if (!session?.token || reminderButton.disabled) return;
+    reminderButton.disabled = true;
+    reminderButton.textContent = 'Mengaktifkan...';
+    try {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        throw new Error('Browser ini belum mendukung notifikasi perangkat.');
+      }
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') throw new Error('Izin notifikasi belum diberikan.');
+      const registration = await navigator.serviceWorker.register('./sw.js?v=1', { scope: './' });
+      await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: vapidKeyBytes(VAPID_PUBLIC_KEY)
+        });
+      }
+      await studentApi('push-subscribe', { subscription: subscription.toJSON(), userAgent: navigator.userAgent });
+      setReminderState(true, 'Pengingat aktif. Notifikasi dikirim pukul 20.00 WIB bila ada jurnal yang belum lengkap.');
+    } catch (error) {
+      setReminderState(false, error.message || 'Pengingat belum dapat diaktifkan.');
+      reminderButton.disabled = Notification.permission === 'denied';
+    }
+  }
+
+  reminderButton?.addEventListener('click', enableReminders);
 
   const hasContext = (text, pattern) => pattern.test(String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
   const isWorshipActivity = text => hasContext(text, /(ibadah|berdoa|doa|sembahyang|salat|sholat|mengaji|quran|alquran|alkitab|gereja|misa|kebaktian|renungan|puja|bhakti|meditasi|vihara|wihara|pura|kelenteng|liturgi|sakramen)/i);
@@ -200,6 +274,7 @@
     app.classList.remove('hidden');
     selectJournalDate(activeDateKey);
     showIntro();
+    refreshReminderState();
   }
 
   async function loginStudent() {
