@@ -44,7 +44,7 @@
     .calendar-day.fillable[role="button"]{cursor:pointer;box-shadow:inset 0 0 0 1px #f4c94e;transition:transform .15s,box-shadow .15s}
     .calendar-day.fillable[role="button"]:active{transform:scale(.96)}
     .calendar-day.fillable[role="button"]:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
-    .calendar-day.current-day{outline:3px solid #07865f;outline-offset:2px;box-shadow:0 0 0 1px #ffffff}
+    .calendar-day.current-day{outline:0;box-shadow:inset 0 0 0 3px #07865f!important}
     .recap-fillable-hint{margin:16px 0 0;padding:11px 13px;border-radius:12px;background:#fef3c7;color:#7c4a03;font-size:12px;font-weight:650;line-height:1.5}
     @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
     @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}}
