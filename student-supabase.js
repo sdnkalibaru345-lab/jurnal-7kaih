@@ -46,8 +46,9 @@
     .calendar-day.fillable[role="button"]:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
     .calendar-day.current-day{outline:0;box-shadow:inset 0 0 0 3px #07865f!important}
     .recap-fillable-hint{margin:16px 0 0;padding:11px 13px;border-radius:12px;background:#fef3c7;color:#7c4a03;font-size:12px;font-weight:650;line-height:1.5}
+    .modal:not(.recap-modal) .modal-footer>button{flex:1}
     @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
-    @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}}
+    @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}.modal:not(.recap-modal) .modal-footer{grid-template-columns:1fr 1fr}}
   `;
   document.head.appendChild(style);
 
@@ -134,6 +135,8 @@
   }
 
   function enhanceRecapCalendar() {
+    const saveAspectButton = modal.querySelector('#saveAspect');
+    if (saveAspectButton && saveAspectButton.textContent !== 'Simpan') saveAspectButton.textContent = 'Simpan';
     const grid = modal.querySelector('.calendar-grid');
     if (!grid) return;
     const visibleMonth = modal.querySelector('.month-nav h3')?.textContent.trim() || '';
