@@ -137,10 +137,14 @@
     const grid = modal.querySelector('.calendar-grid');
     if (!grid) return;
     const visibleMonth = modal.querySelector('.month-nav h3')?.textContent.trim() || '';
-    const currentMonth = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(today);
+    const jakartaParts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date()).filter(part => part.type !== 'literal').map(part => [part.type, Number(part.value)]));
+    const jakartaToday = new Date(jakartaParts.year, jakartaParts.month - 1, jakartaParts.day, 12);
+    const currentMonth = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(jakartaToday);
     grid.querySelectorAll('.calendar-day:not(.empty)').forEach(cell => {
       const isToday = visibleMonth === currentMonth
-        && Number(cell.querySelector('strong')?.textContent) === today.getDate();
+        && Number(cell.querySelector('strong')?.textContent) === jakartaToday.getDate();
       cell.classList.toggle('current-day', isToday);
       if (isToday) cell.setAttribute('aria-current', 'date');
       else cell.removeAttribute('aria-current');
