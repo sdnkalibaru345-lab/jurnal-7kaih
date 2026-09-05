@@ -137,6 +137,12 @@
   function enhanceRecapCalendar() {
     const saveAspectButton = modal.querySelector('#saveAspect');
     if (saveAspectButton && saveAspectButton.textContent !== 'Simpan') saveAspectButton.textContent = 'Simpan';
+    const parentConfirmation = modal.querySelector('.honesty');
+    if (parentConfirmation && current?.id === 'orangtua' && !parentConfirmation.dataset.parentCopy) {
+      const textNode = [...parentConfirmation.childNodes].find(node => node.nodeType === Node.TEXT_NODE);
+      if (textNode) textNode.textContent = ' Saya adalah orang tua/wali siswa. Saya mengonfirmasi bahwa isian jurnal sudah sesuai';
+      parentConfirmation.dataset.parentCopy = 'true';
+    }
     const grid = modal.querySelector('.calendar-grid');
     if (!grid) return;
     const visibleMonth = modal.querySelector('.month-nav h3')?.textContent.trim() || '';
