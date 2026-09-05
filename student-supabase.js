@@ -37,7 +37,12 @@
     .reminder-card h3{font-size:16px;margin:0 0 4px;color:#3f3210}.reminder-card p{font-size:13px;line-height:1.45;margin:0;color:#6e5b27}
     .reminder-button{flex:0 0 auto;border:0;border-radius:12px;min-height:44px;padding:10px 15px;background:#047857;color:#fff;font-weight:800;cursor:pointer}
     .reminder-button:disabled{opacity:.65;cursor:not-allowed}.reminder-card.active{background:#ecfdf5;border-color:#a7dfc7}.reminder-card.active h3{color:#065f46}.reminder-card.active p{color:#39715f}
+    #introPage{place-items:stretch center}
+    #introPage .step-card{min-height:calc(100dvh - 158px);display:flex;flex-direction:column}
+    #introPage .step-actions{margin-top:auto;padding-top:32px}
+    #downloadWindow,.recap-body .legend{display:none!important}
     @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
+    @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}}
   `;
   document.head.appendChild(style);
 
@@ -108,6 +113,24 @@
   }
 
   reminderButton?.addEventListener('click', enableReminders);
+
+  let recapTouchStartX = 0;
+  let recapTouchStartY = 0;
+  modal.addEventListener('touchstart', event => {
+    if (!modal.querySelector('.calendar-grid') || event.touches.length !== 1) return;
+    recapTouchStartX = event.touches[0].clientX;
+    recapTouchStartY = event.touches[0].clientY;
+  }, { passive: true });
+  modal.addEventListener('touchend', event => {
+    if (!modal.querySelector('.calendar-grid') || !recapTouchStartX || event.changedTouches.length !== 1) return;
+    const deltaX = event.changedTouches[0].clientX - recapTouchStartX;
+    const deltaY = event.changedTouches[0].clientY - recapTouchStartY;
+    recapTouchStartX = recapTouchStartY = 0;
+    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+    const buttons = modal.querySelectorAll('.month-nav button');
+    const target = deltaX > 0 ? buttons[0] : buttons[buttons.length - 1];
+    if (target && !target.disabled) target.click();
+  }, { passive: true });
 
   const hasContext = (text, pattern) => pattern.test(String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
   const isWorshipActivity = text => hasContext(text, /(ibadah|berdoa|doa|sembahyang|salat|sholat|mengaji|quran|alquran|alkitab|gereja|misa|kebaktian|renungan|puja|bhakti|meditasi|vihara|wihara|pura|kelenteng|liturgi|sakramen)/i);
