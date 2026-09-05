@@ -47,6 +47,9 @@
     .calendar-day.current-day{outline:0;box-shadow:inset 0 0 0 3px #07865f!important}
     .recap-fillable-hint{margin:16px 0 0;padding:11px 13px;border-radius:12px;background:#fef3c7;color:#7c4a03;font-size:12px;font-weight:650;line-height:1.5}
     .modal:not(.recap-modal) .modal-footer>button{flex:1}
+    .parent-card.parent-locked{filter:grayscale(.72);opacity:.58;cursor:not-allowed;box-shadow:none}
+    .parent-card.parent-locked:hover{transform:none;box-shadow:none}
+    .parent-card.parent-locked .go{color:#66736f}
     @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
     @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}.modal:not(.recap-modal) .modal-footer{grid-template-columns:1fr 1fr}}
   `;
@@ -185,6 +188,25 @@
     const visibleMonth = modal.querySelector('.month-nav h3')?.textContent.trim() || '';
     openFillableJournal(Number(cell.querySelector('strong')?.textContent), visibleMonth);
   });
+
+  function gateParentConfirmation() {
+    const parentCard = document.querySelector('#cards .parent-card');
+    if (!parentCard) return;
+    const studentAspectsComplete = habits
+      .filter(habit => habit.id !== 'orangtua')
+      .every(habit => done.has(habit.id));
+    parentCard.disabled = !studentAspectsComplete;
+    parentCard.classList.toggle('parent-locked', !studentAspectsComplete);
+    parentCard.setAttribute('aria-disabled', String(!studentAspectsComplete));
+    const actionText = parentCard.querySelector('.go');
+    if (actionText) actionText.textContent = studentAspectsComplete
+      ? 'Isi sekarang →'
+      : 'Lengkapi 7 aspek terlebih dahulu';
+  }
+
+  const cardsContainer = document.getElementById('cards');
+  new MutationObserver(gateParentConfirmation).observe(cardsContainer, { childList: true });
+  gateParentConfirmation();
 
   let recapTouchStartX = 0;
   let recapTouchStartY = 0;
