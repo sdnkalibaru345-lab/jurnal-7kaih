@@ -35,6 +35,50 @@
   `;
   document.head.appendChild(style);
 
+  const hasContext = (text, pattern) => pattern.test(String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+  const isWorshipActivity = text => hasContext(text, /(ibadah|berdoa|doa|sembahyang|salat|sholat|mengaji|quran|alquran|alkitab|gereja|misa|kebaktian|renungan|puja|bhakti|meditasi|vihara|wihara|pura|kelenteng|liturgi|sakramen)/i);
+  const isPhysicalActivity = text => hasContext(text, /(jalan(?: kaki)?|lari|senam|sepak bola|futsal|renang|sepeda|badminton|bulu tangkis|voli|basket|silat|karate|taekwondo|menari|dance|skipping|lompat|push.?up|sit.?up|plank|yoga|jogging|gym|olahraga)/i);
+  const isStudyActivity = text => hasContext(text, /(belajar|membaca|baca buku|menulis|berhitung|mengerjakan (?:pr|tugas|soal)|latihan soal|menghafal|les|matematika|bahasa indonesia|bahasa inggris|bahasa sunda|ipas|ipa|ips|pancasila|agama|seni|pjok|koding|coding)/i);
+  const isSocialActivity = text => hasContext(text, /(membantu|menolong|mencuci|menyapu|mengepel|memasak|merapikan|membersihkan|membereskan|membuang sampah|cuci piring|cuci baju|lipat baju|menjemur|kerja bakti|gotong royong|piket|bakti sosial|donasi|berbagi|menjaga adik|membantu (?:ibu|ayah|orang tua|ortu|tetangga)|kegiatan masyarakat|ronda|posyandu)/i);
+
+  window.calculateAchievement = function () {
+    if (!current || current.id === 'orangtua') return null;
+    if (current.kind === 'time') {
+      const value = modal.querySelector('input[type="time"]').value;
+      if (current.id === 'bangun') return value >= '04:00' && value <= '05:00';
+      if (current.id === 'tidur') return value >= '19:00' && value <= '21:00';
+    }
+    if (current.kind === 'worship') {
+      const religion = modal.querySelector('select').value;
+      if (religion === 'Islam') {
+        return ['prayer0', 'prayer1', 'prayer2', 'prayer3', 'prayer4']
+          .filter(name => modal.querySelector(`input[name="${name}"]:checked`)?.value === 'ya').length >= 3;
+      }
+      return isWorshipActivity(modal.querySelector('#religionDetails input')?.value || '');
+    }
+    if (current.id === 'olahraga') {
+      return modal.querySelector('input[name="mainAnswer"]:checked')?.value === 'ya'
+        && isPhysicalActivity(modal.querySelector('#conditionalDetails input')?.value || '');
+    }
+    if (current.kind === 'nutrition') {
+      return ['food0', 'food1', 'food2', 'food3', 'food4']
+        .filter(name => modal.querySelector(`input[name="${name}"]:checked`)?.value === 'ya').length >= 3;
+    }
+    if (current.id === 'belajar') {
+      return modal.querySelector('input[name="mainAnswer"]:checked')?.value === 'ya'
+        && [...modal.querySelectorAll('#conditionalDetails input')].some(input => isStudyActivity(input.value));
+    }
+    if (current.id === 'masyarakat') {
+      return modal.querySelector('input[name="mainAnswer"]:checked')?.value === 'ya'
+        && [...modal.querySelectorAll('#conditionalDetails input')].some(input => isSocialActivity(input.value));
+    }
+    return false;
+  };
+
+  const slideEntryButton = [...document.querySelectorAll('.slide-enter button')]
+    .find(button => button.textContent.includes('Langsung masuk ke jurnal'));
+  if (slideEntryButton) slideEntryButton.textContent = 'Mulai isi jurnal →';
+
   function readSession() {
     try {
       const value = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
