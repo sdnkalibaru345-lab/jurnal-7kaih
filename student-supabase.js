@@ -44,6 +44,7 @@
     .calendar-day.fillable[role="button"]{cursor:pointer;box-shadow:inset 0 0 0 1px #f4c94e;transition:transform .15s,box-shadow .15s}
     .calendar-day.fillable[role="button"]:active{transform:scale(.96)}
     .calendar-day.fillable[role="button"]:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+    .calendar-day.current-day{outline:3px solid #07865f;outline-offset:2px;box-shadow:0 0 0 1px #ffffff}
     .recap-fillable-hint{margin:16px 0 0;padding:11px 13px;border-radius:12px;background:#fef3c7;color:#7c4a03;font-size:12px;font-weight:650;line-height:1.5}
     @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
     @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}}
@@ -136,6 +137,14 @@
     const grid = modal.querySelector('.calendar-grid');
     if (!grid) return;
     const visibleMonth = modal.querySelector('.month-nav h3')?.textContent.trim() || '';
+    const currentMonth = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(today);
+    grid.querySelectorAll('.calendar-day:not(.empty)').forEach(cell => {
+      const isToday = visibleMonth === currentMonth
+        && Number(cell.querySelector('strong')?.textContent) === today.getDate();
+      cell.classList.toggle('current-day', isToday);
+      if (isToday) cell.setAttribute('aria-current', 'date');
+      else cell.removeAttribute('aria-current');
+    });
     grid.querySelectorAll('.calendar-day.fillable').forEach(cell => {
       if (cell.dataset.fillableReady) return;
       cell.dataset.fillableReady = 'true';
