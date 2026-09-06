@@ -282,10 +282,10 @@
   }, { passive: true });
 
   const hasContext = (text, pattern) => pattern.test(String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
-  const isWorshipActivity = text => hasContext(text, /(ibadah|berdoa|doa|sembahyang|salat|sholat|mengaji|quran|alquran|alkitab|gereja|misa|kebaktian|renungan|puja|bhakti|meditasi|vihara|wihara|pura|kelenteng|liturgi|sakramen)/i);
-  const isPhysicalActivity = text => hasContext(text, /(jalan(?: kaki)?|lari|senam|sepak bola|futsal|renang|sepeda|badminton|bulu tangkis|voli|basket|silat|karate|taekwondo|menari|dance|skipping|lompat|push.?up|sit.?up|plank|yoga|jogging|gym|olahraga)/i);
-  const isStudyActivity = text => hasContext(text, /(belajar|membaca|baca buku|menulis|berhitung|mengerjakan (?:pr|tugas|soal)|latihan soal|menghafal|les|matematika|bahasa indonesia|bahasa inggris|bahasa sunda|ipas|ipa|ips|pancasila|agama|seni|pjok|koding|coding)/i);
-  const isSocialActivity = text => hasContext(text, /(membantu|menolong|mencuci|menyapu|mengepel|memasak|merapikan|membersihkan|membereskan|membuang sampah|cuci piring|cuci baju|lipat baju|menjemur|kerja bakti|gotong royong|piket|bakti sosial|donasi|berbagi|menjaga adik|membantu (?:ibu|ayah|orang tua|ortu|tetangga)|kegiatan masyarakat|ronda|posyandu)/i);
+  const isWorshipActivity = text => hasContext(text, /(ibadah|berdoa|doa|sembahyang|salat|sholat|mengaji|quran|alquran|kitab suci|alkitab|gereja|misa|kebaktian|sekolah minggu|renungan|dzikir|zikir|puasa|puja|bhakti|meditasi|vihara|wihara|pura|kelenteng|liturgi|sakramen)/i);
+  const isPhysicalActivity = text => hasContext(text, /(olahraga|main bola|bermain bola|sepak bola|futsal|running|lari|jogging|joging|jalan(?: kaki)?|senam|renang|berenang|sepeda|bersepeda|badminton|bulu tangkis|voli|volley|basket|tenis|kasti|baseball|softball|silat|karate|taekwondo|menari|dance|skipping|lompat|push.?up|sit.?up|plank|yoga|zumba|workout|gym|angkat beban|hiking|naik turun tangga)/i);
+  const isStudyActivity = text => hasContext(text, /(belajar|membaca|baca buku|menulis|berhitung|mengerjakan (?:pr|tugas|soal)|ngerjain (?:pr|tugas|soal)|latihan soal|menghafal|hafalan|les|kursus|matematika|bahasa indonesia|bahasa inggris|bahasa sunda|ipas|ipa|ips|pancasila|agama|seni|pjok|koding|coding)/i);
+  const isSocialActivity = text => hasContext(text, /(membantu|bantu (?:ibu|ayah|orang tua|ortu|tetangga)|menolong|mencuci|menyapu|nyapu|mengepel|ngepel|memasak|merapikan|beres.?beres|membersihkan|membereskan|membuang sampah|buang sampah|cuci piring|cuci baju|lipat baju|menjemur|menyiram tanaman|merawat tanaman|kerja bakti|gotong royong|piket|bakti sosial|donasi|berbagi|menjaga adik|kegiatan masyarakat|ronda|posyandu)/i);
 
   window.calculateAchievement = function () {
     if (!current || current.id === 'orangtua') return null;
