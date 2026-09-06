@@ -50,6 +50,7 @@
     .parent-card.parent-locked{filter:grayscale(.72);opacity:.58;cursor:not-allowed;box-shadow:none}
     .parent-card.parent-locked:hover{transform:none;box-shadow:none}
     .parent-card.parent-locked .go{color:#66736f}
+    #signaturePad{pointer-events:auto!important;touch-action:none!important;user-select:none;-webkit-user-select:none;overscroll-behavior:contain}
     @media(max-width:560px){.reminder-card{align-items:stretch;flex-direction:column;padding:15px 14px}.reminder-button{width:100%}}
     @media(max-width:767px){#introPage .step-card{min-height:calc(100dvh - 102px)}#introPage .step-actions{padding-top:24px}.modal:not(.recap-modal) .modal-footer{grid-template-columns:1fr 1fr}}
   `;
@@ -138,6 +139,7 @@
   }
 
   function enhanceRecapCalendar() {
+    ensureSignaturePad();
     const saveAspectButton = modal.querySelector('#saveAspect');
     if (saveAspectButton && saveAspectButton.textContent !== 'Simpan') saveAspectButton.textContent = 'Simpan';
     const parentConfirmation = modal.querySelector('.honesty');
@@ -207,6 +209,59 @@
   const cardsContainer = document.getElementById('cards');
   new MutationObserver(gateParentConfirmation).observe(cardsContainer, { childList: true });
   gateParentConfirmation();
+
+  function ensureSignaturePad() {
+    const canvas = modal.querySelector('#signaturePad');
+    if (!canvas || canvas.dataset.robustSignature === 'true') return;
+    if (!canvas.clientWidth || !canvas.clientHeight) {
+      requestAnimationFrame(ensureSignaturePad);
+      return;
+    }
+    canvas.dataset.robustSignature = 'true';
+    canvas.onpointerdown = canvas.onpointermove = canvas.onpointerup = canvas.onpointercancel = null;
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.round(canvas.clientWidth * ratio);
+    canvas.height = Math.round(canvas.clientHeight * ratio);
+    const context = canvas.getContext('2d');
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.lineWidth = 2.4;
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.strokeStyle = '#172b26';
+    let drawing = false;
+    let hasStroke = false;
+    const point = event => {
+      const bounds = canvas.getBoundingClientRect();
+      return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    };
+    canvas.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      drawing = true;
+      hasStroke = false;
+      const position = point(event);
+      context.beginPath();
+      context.moveTo(position.x, position.y);
+      try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+    });
+    canvas.addEventListener('pointermove', event => {
+      if (!drawing) return;
+      event.preventDefault();
+      const position = point(event);
+      context.lineTo(position.x, position.y);
+      context.stroke();
+      hasStroke = true;
+      signatureDrawn = true;
+    });
+    const finish = event => {
+      if (!drawing) return;
+      event.preventDefault();
+      drawing = false;
+      if (hasStroke) signatureDrawn = true;
+      validateModal();
+    };
+    canvas.addEventListener('pointerup', finish);
+    canvas.addEventListener('pointercancel', finish);
+  }
 
   let recapTouchStartX = 0;
   let recapTouchStartY = 0;
