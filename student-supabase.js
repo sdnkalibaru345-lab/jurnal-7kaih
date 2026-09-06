@@ -298,7 +298,7 @@
       const religion = modal.querySelector('select').value;
       if (religion === 'Islam') {
         return ['prayer0', 'prayer1', 'prayer2', 'prayer3', 'prayer4']
-          .filter(name => modal.querySelector(`input[name="${name}"]:checked`)?.value === 'ya').length >= 3;
+          .every(name => modal.querySelector(`input[name="${name}"]:checked`)?.value === 'ya');
       }
       return isWorshipActivity(modal.querySelector('#religionDetails input')?.value || '');
     }
