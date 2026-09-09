@@ -105,7 +105,7 @@
       }
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') throw new Error('Izin notifikasi belum diberikan.');
-      const registration = await navigator.serviceWorker.register('./sw.js?v=1', { scope: './' });
+      const registration = await navigator.serviceWorker.register('./sw.js?v=2', { scope: './' });
       await navigator.serviceWorker.ready;
       let subscription = await registration.pushManager.getSubscription();
       if (!subscription) {
