@@ -7,7 +7,7 @@ self.addEventListener('push', event => {
   } catch (_) {
     data = { body: event.data ? event.data.text() : '' };
   }
-  event.waitUntil(self.registration.showNotification(data.title || 'Pengingat Jurnal 7 KAIH', {
+  event.waitUntil(self.registration.showNotification(data.title || 'Jurnal 7 KAIH SDN Kalibaru 3', {
     body: data.body || 'Masih ada jurnal yang belum lengkap.',
     icon: './assets/logo-kb3.png',
     badge: './assets/logo-kb3.png',
