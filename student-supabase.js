@@ -221,7 +221,8 @@
       return;
     }
     const changed = snapshotValue(draftsByDate[key] || {}) !== snapshotValue(submittedAnswersByDate[key] || {});
-    dirtyDates.toggle ? dirtyDates.toggle(key, changed) : (changed ? dirtyDates.add(key) : dirtyDates.delete(key));
+    if (changed) dirtyDates.add(key);
+    else dirtyDates.delete(key);
   }
 
   function selectedJournalLabel() {
