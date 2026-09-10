@@ -6,6 +6,11 @@
   const SESSION_KEY = 'j7-student-session-v1';
   const VAPID_PUBLIC_KEY = 'BBObhvP0qRN0yBAqChymWR2raH_uLc901SvNAyjkHuBnEAmkXHcbOaNzszTb7A41Q2yjF9mEIu1xdJJ2D3poT2k';
   const draftsByDate = {};
+  const submittedAnswersByDate = {};
+  const submittedDates = new Set();
+  const dirtyDates = new Set();
+  let modalInitialSnapshot = '';
+  let editingSavedHabit = false;
   let session = readSession();
   let classes = [];
   let sending = false;
@@ -191,6 +196,151 @@
     openFillableJournal(Number(cell.querySelector('strong')?.textContent), visibleMonth);
   });
 
+  function cloneValue(value) {
+    return JSON.parse(JSON.stringify(value ?? {}));
+  }
+
+  function canonicalValue(value) {
+    if (Array.isArray(value)) return value.map(canonicalValue);
+    if (value && typeof value === 'object') {
+      return Object.keys(value).sort().reduce((result, key) => {
+        result[key] = canonicalValue(value[key]);
+        return result;
+      }, {});
+    }
+    return value;
+  }
+
+  function snapshotValue(value) {
+    return JSON.stringify(canonicalValue(value));
+  }
+
+  function refreshDirtyState(key) {
+    if (!submittedDates.has(key)) {
+      dirtyDates.delete(key);
+      return;
+    }
+    const changed = snapshotValue(draftsByDate[key] || {}) !== snapshotValue(submittedAnswersByDate[key] || {});
+    dirtyDates.toggle ? dirtyDates.toggle(key, changed) : (changed ? dirtyDates.add(key) : dirtyDates.delete(key));
+  }
+
+  function selectedJournalLabel() {
+    return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long' })
+      .format(new Date(activeDateKey + 'T12:00:00'));
+  }
+
+  function updateSendButtonState() {
+    const sendButton = document.getElementById('send');
+    if (!sendButton || sending) return;
+    const submitted = submittedDates.has(activeDateKey);
+    const changed = dirtyDates.has(activeDateKey);
+    const label = selectedJournalLabel();
+    if (submitted && !changed) {
+      sendButton.textContent = `Jurnal tanggal ${label} sudah dikirim`;
+      sendButton.disabled = true;
+      return;
+    }
+    if (submitted && changed) {
+      sendButton.textContent = `Kirim perubahan jurnal ${label}`;
+      sendButton.disabled = done.size < habits.length;
+      return;
+    }
+    const isToday = activeDateKey === dateKey(today);
+    sendButton.textContent = isToday ? 'Kirim jurnal hari ini' : `Kirim jurnal ${label}`;
+    sendButton.disabled = done.size < habits.length;
+  }
+
+  function setSavedRadio(name, value) {
+    const option = modal.querySelector(`input[name="${name}"][value="${value}"]`);
+    if (option) option.checked = true;
+  }
+
+  function restoreSavedHabit() {
+    const saved = draftsByDate[activeDateKey]?.[current?.id];
+    editingSavedHabit = Boolean(saved);
+    modalInitialSnapshot = '';
+    if (!saved || !current) return;
+
+    if (current.kind === 'time') {
+      const input = modal.querySelector('input[type="time"]');
+      if (input) input.value = saved.time || '';
+    } else if (current.kind === 'worship') {
+      const religion = saved.religion || '';
+      const select = modal.querySelector('select');
+      if (select) select.value = religion;
+      updateReligion(religion);
+      if (religion === 'Islam') {
+        const prayers = saved.prayers || {};
+        ['subuh', 'zuhur', 'asar', 'magrib', 'isya'].forEach((key, index) => {
+          if (prayers[key]) setSavedRadio(`prayer${index}`, prayers[key]);
+        });
+      } else {
+        const input = modal.querySelector('#religionDetails input');
+        if (input) input.value = saved.worship || '';
+      }
+    } else if (current.kind === 'conditional') {
+      const answer = saved.performed ? 'ya' : 'tidak';
+      setSavedRadio('mainAnswer', answer);
+      toggleDetails(answer);
+      const inputs = [...modal.querySelectorAll('#conditionalDetails input')];
+      if (current.id === 'olahraga') {
+        if (inputs[0]) inputs[0].value = saved.detail || '';
+      } else if (current.id === 'belajar') {
+        if (inputs[0]) inputs[0].value = saved.school || '';
+        if (inputs[1]) inputs[1].value = saved.home || '';
+      } else {
+        if (inputs[0]) inputs[0].value = saved.home || '';
+        if (inputs[1]) inputs[1].value = saved.community || '';
+      }
+    } else if (current.kind === 'nutrition') {
+      const items = saved.items || {};
+      ['pokok', 'lauk', 'buah', 'sayur', 'air'].forEach((key, index) => {
+        if (items[key]) setSavedRadio(`food${index}`, items[key]);
+      });
+    } else if (current.kind === 'signature') {
+      const input = modal.querySelector('.field input');
+      if (input) input.value = saved.name || '';
+      signatureDrawn = saved.confirmed === true;
+      const tools = modal.querySelector('.signature-tools');
+      if (tools && saved.confirmed === true) {
+        tools.insertAdjacentHTML('beforebegin', '<p class="sync-note">✓ Tanda tangan telah dikonfirmasi pada pengiriman sebelumnya. Gambar tanda tangan tidak disimpan.</p>');
+      }
+    }
+
+    modalInitialSnapshot = snapshotValue(serializeCurrentHabit());
+    const honesty = document.getElementById('honestyCheck');
+    validateModal();
+    if (honesty && !honesty.disabled) honesty.checked = true;
+    gateSave();
+    applySavedEditGate();
+  }
+
+  function applySavedEditGate() {
+    if (!editingSavedHabit || !current) return;
+    const changed = snapshotValue(serializeCurrentHabit()) !== modalInitialSnapshot;
+    const saveButton = document.getElementById('saveAspect');
+    const hint = document.getElementById('validationHint');
+    if (!changed) {
+      if (saveButton) saveButton.disabled = true;
+      if (hint) {
+        hint.textContent = 'Ubah jawaban untuk mengaktifkan tombol Simpan.';
+        hint.classList.remove('hidden');
+      }
+    }
+  }
+
+  const baseOpenHabit = window.openHabit;
+  window.openHabit = function (id) {
+    baseOpenHabit(id);
+    restoreSavedHabit();
+    const handleEdit = () => {
+      validateModal();
+      applySavedEditGate();
+    };
+    modal.oninput = handleEdit;
+    modal.onchange = handleEdit;
+  };
+
   function gateParentConfirmation() {
     const parentCard = document.querySelector('#cards .parent-card');
     if (!parentCard) return;
@@ -204,6 +354,7 @@
     if (actionText) actionText.textContent = studentAspectsComplete
       ? 'Isi sekarang →'
       : 'Lengkapi 7 aspek terlebih dahulu';
+    updateSendButtonState();
   }
 
   const cardsContainer = document.getElementById('cards');
@@ -427,11 +578,17 @@
     Object.keys(progressByDate).forEach(key => delete progressByDate[key]);
     Object.keys(achievementByDate).forEach(key => delete achievementByDate[key]);
     Object.keys(draftsByDate).forEach(key => delete draftsByDate[key]);
+    Object.keys(submittedAnswersByDate).forEach(key => delete submittedAnswersByDate[key]);
+    submittedDates.clear();
+    dirtyDates.clear();
     for (const entry of entries || []) {
       const key = entry.journal_date;
+      const answers = entry.answers || {};
       progressByDate[key] = new Set(habits.map(habit => habit.id));
       achievementByDate[key] = achievementMap(entry);
-      draftsByDate[key] = entry.answers || {};
+      draftsByDate[key] = answers;
+      submittedAnswersByDate[key] = cloneValue(answers);
+      submittedDates.add(key);
     }
     done = progressByDate[activeDateKey] || (progressByDate[activeDateKey] = new Set());
     achievementByDate[activeDateKey] ||= {};
@@ -543,6 +700,7 @@
     const achieved = calculateAchievement();
     draftsByDate[activeDateKey] ||= {};
     draftsByDate[activeDateKey][aspectId] = serializeCurrentHabit();
+    refreshDirtyState(activeDateKey);
     if (aspectId !== 'orangtua') achievementByDate[activeDateKey][aspectId] = achieved;
     done.add(aspectId);
     closeModal();
@@ -551,7 +709,7 @@
   };
 
   window.showToast = async function () {
-    if (sending || done.size < 8) return;
+    if (sending || done.size < 8 || (submittedDates.has(activeDateKey) && !dirtyDates.has(activeDateKey))) return;
     const answers = draftsByDate[activeDateKey];
     if (!answers || habits.some(habit => !answers[habit.id])) {
       showSendMessage('Isian belum siap dikirim', 'Buka dan simpan kembali setiap aspek jurnal.');
@@ -571,6 +729,9 @@
       achievementByDate[activeDateKey] = responseAchievementMap(result.achievements || {});
       progressByDate[activeDateKey] = new Set(habits.map(habit => habit.id));
       done = progressByDate[activeDateKey];
+      submittedDates.add(activeDateKey);
+      submittedAnswersByDate[activeDateKey] = cloneValue(answers);
+      dirtyDates.delete(activeDateKey);
       renderDates();
       render();
       showSendMessage('✓ Jurnal berhasil disimpan', 'Data jurnal sudah tersimpan dengan aman.');
@@ -583,7 +744,7 @@
     } finally {
       sending = false;
       sendButton.textContent = original;
-      sendButton.disabled = done.size < 8;
+      updateSendButtonState();
     }
   };
 
