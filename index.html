@@ -115,11 +115,7 @@
     originalIntro.remove();originalSlideshow.remove();
     homePage.before(introPage,slideshowPage);homePage.classList.add('hidden');
     function stopBackgroundMusic(){
-      try{
-        audio.pause();
-        audio.currentTime=0;
-      }catch(_){}
-      stopMarquee();
+      if(window.stopBackgroundMusic) window.stopBackgroundMusic();
     }
     function switchPage(target){
       if(target!==homePage) stopBackgroundMusic();
@@ -283,10 +279,17 @@
   audio.addEventListener('play',resetButton);
   audio.addEventListener('pause',resetButton);
   audio.addEventListener('ended',resetButton);
-  window.addEventListener('beforeunload',stopBackgroundMusic);
-  window.addEventListener('pagehide',stopBackgroundMusic);
+  window.stopBackgroundMusic=()=>{
+    try{
+      audio.pause();
+      audio.currentTime=0;
+    }catch(_){}
+    stopMarquee();
+  };
+  window.addEventListener('beforeunload',window.stopBackgroundMusic);
+  window.addEventListener('pagehide',window.stopBackgroundMusic);
   document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState==='hidden') stopBackgroundMusic();
+    if(document.visibilityState==='hidden') window.stopBackgroundMusic();
   });
 
   loadBackgroundMusic();
