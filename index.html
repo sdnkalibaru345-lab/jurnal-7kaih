@@ -32,10 +32,31 @@
     .login-logos{position:absolute;top:max(22px,env(safe-area-inset-top));right:max(28px,env(safe-area-inset-right));z-index:2;display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid #ffffffcc;border-radius:18px;background:#ffffffc9;box-shadow:0 12px 32px #063c2d14;backdrop-filter:blur(10px)}.login-logos img{display:block;object-fit:contain}.login-logos .school-logo{width:58px;height:58px}.login-logos .program-logo{width:180px;height:54px}
     @media(max-width:767px){.login-logos{position:relative;top:auto;right:auto;width:max-content;max-width:100%;margin:0 0 8px auto;padding:7px 10px;gap:9px;border-radius:14px}.login-logos .school-logo{width:40px;height:40px}.login-logos .program-logo{width:128px;height:38px}}
   </style>
-</head>
+<style id="backgroundMusicStyles">
+.music-player{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:12px 14px;display:flex;align-items:center;gap:13px;box-shadow:0 5px 18px #17352d0b}
+.music-cover{width:58px;height:58px;flex:0 0 58px;border-radius:15px;overflow:hidden;background:#eef1f0;color:#8b9692;display:grid;place-items:center;font-size:25px}
+.music-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.music-meta{min-width:0;flex:1}
+.music-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:#047857;margin-bottom:4px}
+.music-title{font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-artist{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-control{width:46px;height:46px;flex:0 0 46px;border:0;border-radius:50%;background:#047857;color:#fff;display:grid;place-items:center;font-size:18px;box-shadow:0 7px 15px #0478572b}
+.music-control:hover{background:#065f46}
+.music-player.is-playing .music-cover{box-shadow:0 0 0 3px #a7f3d0}
+@media(max-width:560px){.music-player{padding:10px 11px;border-radius:18px}.music-cover{width:52px;height:52px;flex-basis:52px;border-radius:13px}.music-control{width:44px;height:44px;flex-basis:44px}}
+</style></head>
 <body>
   <section id="login" class="login"><div class="login-logos" aria-label="Logo SDN Kalibaru 3 dan program 7 Kebiasaan Anak Indonesia Hebat"><img class="school-logo" src="assets/logo-kb3.png" alt="Logo SDN Kalibaru 3"><img class="program-logo" src="assets/logo-7kaih.png" alt="Logo 7 Kebiasaan Anak Indonesia Hebat"></div><div class="wrap login-grid"><div class="hero"><span class="pill">✨ 7 Kebiasaan Anak Indonesia Hebat</span><h1>Kebiasaan baik,<br>tumbuh setiap hari.</h1><p>Isi jurnal harian, lihat perkembanganmu, lalu unduh rekap bulanan dalam satu tempat.</p><div class="school">🏫 SDN Kalibaru 3 · Kota Depok</div></div><div class="login-card"><span class="test">PROTOTIPE · BELUM TERHUBUNG DATABASE</span><h2>Masuk ke jurnal</h2><p>Pilih kelas dan nama, lalu masukkan PIN siswa.</p><div class="field"><label>Kelas</label><select class="control" disabled><option>Data kelas belum dimasukkan</option></select></div><div class="field"><label>Nama siswa</label><select class="control" disabled><option>Data siswa belum dimasukkan</option></select></div><div class="field"><label>PIN</label><input class="control" disabled placeholder="6 digit PIN"></div><button class="primary wide" onclick="enterApp()">Lihat Mode Uji Coba</button><p class="hint">Tombol ini hanya untuk melihat desain dan alur pengisian.</p></div></div></section>
-  <section id="app" class="hidden"><header class="topbar"><div class="wrap"><div class="brand"><div class="header-logos"><img src="assets/logo-kb3.png" alt="Logo SDN Kalibaru 3"><img src="assets/logo-7kaih.png" alt="Logo 7 Kebiasaan Anak Indonesia Hebat"></div><div><div class="eyebrow">SDN Kalibaru 3</div><h1>Jurnal 7 KAIH</h1></div></div><button class="ghost" onclick="leaveApp()">↪ Keluar</button></div></header><main class="wrap content"><section class="welcome"><div><span class="mode">✨ Mode Uji Coba</span><h2>Halo, Siswa Uji Coba!</h2><p>Rabu, 2 September 2026</p></div><div class="meter"><div class="meter-info"><span>Sudah diisi</span><b><span id="count">0</span> dari 7</b></div><div class="track"><div id="bar" class="bar"></div></div></div></section><section class="intro"><div class="eyebrow">Pendahuluan</div><h2>Gerakan 7 Kebiasaan Anak Indonesia Hebat</h2><p>Dalam upaya membentuk generasi emas Indonesia pada tahun 2045, Kementerian Pendidikan Dasar dan Menengah (Kemdikdasmen) telah meluncurkan “Gerakan 7 Kebiasaan Anak Indonesia Hebat”. Gerakan ini bertujuan menanamkan kebiasaan positif pada anak-anak sejak dini, sehingga mereka tumbuh menjadi individu yang sehat, cerdas, dan berkarakter.</p></section><section class="slideshow"><div class="slideshow-frame"><iframe src="https://canva.link/qqa16i0aovz9sxq" title="Slideshow Gerakan 7 Kebiasaan Anak Indonesia Hebat" loading="lazy" allowfullscreen></iframe></div><div class="slideshow-foot"><p>Kenali Gerakan 7 Kebiasaan Anak Indonesia Hebat melalui slideshow ini.</p><a class="slideshow-link" href="https://canva.link/qqa16i0aovz9sxq" target="_blank" rel="noopener noreferrer">Buka slideshow ↗</a></div></section><div class="section-head"><div id="journalSectionLabel" class="eyebrow" style="color:#047857">Jurnal hari ini</div><h2>7 Kebiasaan Anak Indonesia Hebat</h2><p>Isi setiap aspek sesuai kegiatan yang benar-benar kamu lakukan.</p></div><section id="cards" class="cards"></section><section class="final"><div><h3>Pastikan semua aspek sudah diisi.</h3><p>Jawaban masih dapat diperiksa sebelum jurnal dikirim.</p></div><button id="send" class="primary" disabled onclick="showToast()">✓ Kirim jurnal hari ini</button></section></main></section>
+  <section id="app" class="hidden"><header class="topbar"><div class="wrap"><div class="brand"><div class="header-logos"><img src="assets/logo-kb3.png" alt="Logo SDN Kalibaru 3"><img src="assets/logo-7kaih.png" alt="Logo 7 Kebiasaan Anak Indonesia Hebat"></div><div><div class="eyebrow">SDN Kalibaru 3</div><h1>Jurnal 7 KAIH</h1></div></div><button class="ghost" onclick="leaveApp()">↪ Keluar</button></div></header><main class="wrap content"><section class="welcome"><div><span class="mode">✨ Mode Uji Coba</span><h2>Halo, Siswa Uji Coba!</h2><p>Rabu, 2 September 2026</p></div><div class="meter"><div class="meter-info"><span>Sudah diisi</span><b><span id="count">0</span> dari 7</b></div><div class="track"><div id="bar" class="bar"></div></div></div></section><section id="musicPlayer" class="music-player hidden" aria-label="Musik yang sedang aktif">
+  <div id="musicCover" class="music-cover" aria-hidden="true">♫</div>
+  <div class="music-meta">
+    <div class="music-label">Musik aktif</div>
+    <div id="musicTitle" class="music-title">—</div>
+    <div id="musicArtist" class="music-artist">—</div>
+  </div>
+  <button id="musicToggle" class="music-control" type="button" aria-label="Putar musik" title="Putar musik">▶</button>
+  <audio id="backgroundMusic" preload="metadata"></audio>
+</section><section class="intro"><div class="eyebrow">Pendahuluan</div><h2>Gerakan 7 Kebiasaan Anak Indonesia Hebat</h2><p>Dalam upaya membentuk generasi emas Indonesia pada tahun 2045, Kementerian Pendidikan Dasar dan Menengah (Kemdikdasmen) telah meluncurkan “Gerakan 7 Kebiasaan Anak Indonesia Hebat”. Gerakan ini bertujuan menanamkan kebiasaan positif pada anak-anak sejak dini, sehingga mereka tumbuh menjadi individu yang sehat, cerdas, dan berkarakter.</p></section><section class="slideshow"><div class="slideshow-frame"><iframe src="https://canva.link/qqa16i0aovz9sxq" title="Slideshow Gerakan 7 Kebiasaan Anak Indonesia Hebat" loading="lazy" allowfullscreen></iframe></div><div class="slideshow-foot"><p>Kenali Gerakan 7 Kebiasaan Anak Indonesia Hebat melalui slideshow ini.</p><a class="slideshow-link" href="https://canva.link/qqa16i0aovz9sxq" target="_blank" rel="noopener noreferrer">Buka slideshow ↗</a></div></section><div class="section-head"><div id="journalSectionLabel" class="eyebrow" style="color:#047857">Jurnal hari ini</div><h2>7 Kebiasaan Anak Indonesia Hebat</h2><p>Isi setiap aspek sesuai kegiatan yang benar-benar kamu lakukan.</p></div><section id="cards" class="cards"></section><section class="final"><div><h3>Pastikan semua aspek sudah diisi.</h3><p>Jawaban masih dapat diperiksa sebelum jurnal dikirim.</p></div><button id="send" class="primary" disabled onclick="showToast()">✓ Kirim jurnal hari ini</button></section></main></section>
   <div id="modalBack" class="modal-back hidden" onclick="backdrop(event)"><article id="modal" class="modal"></article></div><div id="toast" class="toast hidden"><strong>⭐ Tampilan pengiriman berhasil!</strong><small>Ini hanya simulasi. Belum ada data yang disimpan.</small></div>
   <script>
     document.querySelector('.slideshow-frame').innerHTML='<div class="slide-placeholder"><span>▶</span><h3>Slideshow 7 Kebiasaan Anak Indonesia Hebat</h3><p>Buka materi visual untuk mengenal tujuh kebiasaan baik sebelum mulai mengisi jurnal.</p></div>';
@@ -124,6 +145,41 @@
       .mini-options label{padding:5px 6px;white-space:nowrap}
     }
   </style>
-  <script src="student-supabase.js?v=14"></script>
+  <script id="backgroundMusicScript">
+(() => {
+  const SUPABASE_URL='https://jwqrojjyrcevyvcdlsjy.supabase.co';
+  const SUPABASE_KEY='sb_publishable_-fxedCs7T1lzP8hzAlyOYw_vJPLP68P';
+  const player=document.getElementById('musicPlayer');
+  const cover=document.getElementById('musicCover');
+  const title=document.getElementById('musicTitle');
+  const artist=document.getElementById('musicArtist');
+  const toggle=document.getElementById('musicToggle');
+  const audio=document.getElementById('backgroundMusic');
+  let musicUrl='';
+  function publicUrl(path){return path?SUPABASE_URL+'/storage/v1/object/public/background-music/'+path.split('/').map(encodeURIComponent).join('/') : '';}
+  function resetButton(){const playing=!audio.paused&&!audio.ended;toggle.textContent=playing?'❚❚':'▶';toggle.setAttribute('aria-label',playing?'Jeda musik':'Putar musik');toggle.title=playing?'Jeda musik':'Putar musik';player.classList.toggle('is-playing',playing);}
+  async function loadBackgroundMusic(){
+    try{
+      const response=await fetch(SUPABASE_URL+'/rest/v1/site_background_music?id=eq.true&select=is_active,title,artist,audio_path,cover_path&limit=1',{headers:{apikey:SUPABASE_KEY}});
+      if(!response.ok) throw new Error('music config request failed');
+      const rows=await response.json(), config=rows[0];
+      if(!config||!config.is_active||!config.audio_path){player.classList.add('hidden');return;}
+      musicUrl=publicUrl(config.audio_path); audio.src=musicUrl; audio.loop=true;
+      title.textContent=config.title||'Tanpa judul'; artist.textContent=config.artist||'Tanpa penyanyi';
+      if(config.cover_path){cover.innerHTML='<img src="'+publicUrl(config.cover_path)+'" alt="Cover '+String(config.title||'musik').replace(/"/g,'&quot;')+'">';}
+      else cover.innerHTML='♫';
+      player.classList.remove('hidden'); resetButton();
+    }catch(error){player.classList.add('hidden');}
+  }
+  toggle.addEventListener('click',async()=>{
+    if(!musicUrl)return;
+    try{if(audio.paused){await audio.play();}else{audio.pause();}}catch(error){}
+    resetButton();
+  });
+  audio.addEventListener('play',resetButton); audio.addEventListener('pause',resetButton); audio.addEventListener('ended',resetButton);
+  window.addEventListener('beforeunload',()=>audio.pause());
+  loadBackgroundMusic();
+})();
+</script><script src="student-supabase.js?v=14"></script>
 </body>
 </html>
