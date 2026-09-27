@@ -198,10 +198,10 @@
       '<div class="field"><label>Cover lagu (opsional)</label><input id="musicCoverInput" class="control" type="file" accept="image/jpeg,image/png,image/webp"></div>' +
       (m.cover_path ? '<label class="switch-row"><span><strong>Hapus cover lama</strong><small>Jika dicentang, box siswa memakai ikon musik abu-abu.</small></span><input id="musicRemoveCover" type="checkbox"></label>' : "") +
       '<label class="switch-row"><span><strong>Musik aktif</strong><small>Tampilkan box musik di halaman utama siswa.</small></span><input id="musicActiveInput" type="checkbox" ' + (m.is_active ? "checked" : "") + '></label>' +
-      '<div id="musicFormError" class="import-errors hidden"></div><div class="music-save-row"><div class="left"><button class="btn" type="button" onclick="loadMusic()">↻ Muat ulang</button></div><button id="saveMusicBtn" class="btn primary" type="button" onclick="saveMusic()">Simpan pengaturan</button></div></section></div></div>';
+      '<div id="musicFormError" class="import-errors hidden"></div><div class="music-save-row"><div class="left"><button class="btn" type="button" onclick="loadMusic()">↻ Muat ulang</button></div></div></section></div></div>';
   };
   window.saveMusic = async function() {
-    const button=document.getElementById("saveMusicBtn"), errorBox=document.getElementById("musicFormError");
+    const button=document.getElementById("saveMusicTopBtn"), errorBox=document.getElementById("musicFormError");
     if(!button)return;
     button.disabled=true; errorBox.classList.add("hidden");
     const old=musicConfig||{};
