@@ -189,8 +189,7 @@
     stopMarquee();
     if(!titleTrack) return;
     const halfWidth=titleTrack.scrollWidth/2;
-    marqueeDistance=halfWidth+21;
-    if(halfWidth<=title.clientWidth+8) return;
+    marqueeDistance=Math.max(halfWidth+21, title.clientWidth+42);
     title.classList.add('marquee');
     titleTrack.dataset.offset='0';
     titleTrack.style.transform='translate3d(0,0,0)';
