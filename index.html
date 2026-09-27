@@ -160,9 +160,9 @@
   function resetButton(){const playing=!audio.paused&&!audio.ended;toggle.textContent=playing?'❚❚':'▶';toggle.setAttribute('aria-label',playing?'Jeda musik':'Putar musik');toggle.title=playing?'Jeda musik':'Putar musik';player.classList.toggle('is-playing',playing);}
   async function loadBackgroundMusic(){
     try{
-      const response=await fetch(SUPABASE_URL+'/rest/v1/site_background_music?id=eq.true&select=is_active,title,artist,audio_path,cover_path&limit=1',{headers:{apikey:SUPABASE_KEY}});
+      const response=await fetch(SUPABASE_URL+'/functions/v1/student-api',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({action:'music'})});
       if(!response.ok) throw new Error('music config request failed');
-      const rows=await response.json(), config=rows[0];
+      const payload=await response.json(), config=payload.music;
       if(!config||!config.is_active||!config.audio_path){player.classList.add('hidden');return;}
       musicUrl=publicUrl(config.audio_path); audio.src=musicUrl; audio.loop=true;
       title.textContent=config.title||'Tanpa judul'; artist.textContent=config.artist||'Tanpa penyanyi';
