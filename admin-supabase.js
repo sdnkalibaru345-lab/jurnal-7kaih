@@ -58,7 +58,7 @@
   async function enterAdmin() {
     try {
       await loadCloudData();
-      await loadMusic();
+      try { await loadMusic(); } catch (_) {}
       authLayer.classList.add('hidden');
       const badge = document.querySelector('.prototype');
       if (badge) { badge.textContent = '● SUPABASE AKTIF'; badge.classList.add('cloud-status'); }
