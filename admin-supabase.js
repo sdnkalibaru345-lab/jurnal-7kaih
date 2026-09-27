@@ -58,6 +58,7 @@
   async function enterAdmin() {
     try {
       await loadCloudData();
+      await loadMusic();
       authLayer.classList.add('hidden');
       const badge = document.querySelector('.prototype');
       if (badge) { badge.textContent = '● SUPABASE AKTIF'; badge.classList.add('cloud-status'); }
@@ -126,6 +127,115 @@
         alert(`${result.generatedPins.length} siswa baru ditambahkan. File PIN baru sudah diunduh.`);
       } else alert('Sinkronisasi selesai. Tidak ada PIN baru.');
     } catch (error) { alert(error.message); button.disabled = false; }
+  };
+
+
+  let musicConfig = null;
+  let musicLoaded = false;
+  const MUSIC_BUCKET = "background-music";
+
+  function musicPublicUrl(path) {
+    return path ? SUPABASE_URL + "/storage/v1/object/public/" + MUSIC_BUCKET + "/" + path.split("/").map(encodeURIComponent).join("/") : "";
+  }
+  async function loadMusic() {
+    try {
+      const data = await adminApi("getMusic");
+      musicConfig = data.music || { is_active:false, title:"", artist:"", audio_path:null, cover_path:null };
+      musicLoaded = true;
+      if (view === "music" && window.renderMusic) window.renderMusic();
+    } catch (error) {
+      musicLoaded = false;
+      if (view === "music") panel.innerHTML = '<div class="music-admin"><div class="import-errors">' + esc(error.message) + '</div></div>';
+    }
+  }
+  function musicExt(name, fallback) {
+    const match = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+    const ext = match ? match[1] : fallback;
+    return ["mp3","mpeg","wav","ogg","webm","m4a","jpg","jpeg","png","webp"].includes(ext) ? ext : fallback;
+  }
+  async function uploadMusicObject(file, kind) {
+    if (!file) return null;
+    const max = kind === "audio" ? 25 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > max) throw new Error(kind === "audio" ? "File musik maksimal 25 MB." : "Cover maksimal 5 MB.");
+    const ext = musicExt(file.name, kind === "audio" ? "mp3" : "jpg");
+    const path = kind + "/" + Date.now() + "-" + Math.random().toString(36).slice(2,8) + "." + ext;
+    const url = SUPABASE_URL + "/storage/v1/object/" + MUSIC_BUCKET + "/" + path.split("/").map(encodeURIComponent).join("/");
+    const response = await fetch(url, {
+      method:"POST",
+      headers:{apikey:SUPABASE_KEY,Authorization:"Bearer " + session.access_token,"Content-Type":file.type || (kind==="audio" ? "audio/mpeg" : "image/jpeg"),"x-upsert":"false"},
+      body:file
+    });
+    if (!response.ok) throw new Error((await response.text().catch(()=> "")) || "Upload file gagal.");
+    return path;
+  }
+  async function deleteMusicObject(path) {
+    if (!path) return;
+    try {
+      const url = SUPABASE_URL + "/storage/v1/object/" + MUSIC_BUCKET + "/" + path.split("/").map(encodeURIComponent).join("/");
+      await fetch(url,{method:"DELETE",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer " + session.access_token}});
+    } catch (_) {}
+  }
+  window.renderMusic = function() {
+    if (!musicLoaded) {
+      panel.innerHTML = '<div class="music-admin"><div class="import-note">Memuat pengaturan musik…</div></div>';
+      loadMusic();
+      return;
+    }
+    const m = musicConfig || {};
+    const cover = m.cover_path ? '<img src="' + musicPublicUrl(m.cover_path) + '" alt="Cover musik">' : "♫";
+    const audio = m.audio_path ? '<audio class="music-audio-preview" controls preload="metadata" src="' + musicPublicUrl(m.audio_path) + '"></audio>' : "";
+    panel.innerHTML =
+      '<div class="music-admin"><div class="music-admin-grid">' +
+      '<section class="music-current"><h3>Musik halaman utama</h3><p>Musik ini tampil di bawah kotak “Halo, nama siswa” pada halaman utama jurnal. Siswa menekan Play untuk mulai mendengarkan.</p>' +
+      '<div class="music-preview"><div class="music-preview-cover">' + cover + '</div><div><div class="music-preview-title">' + esc(m.title || "Belum ada judul") + '</div><div class="music-preview-artist">' + esc(m.artist || "Belum ada penyanyi") + '</div><span class="music-status ' + (m.is_active ? "on" : "off") + '">' + (m.is_active ? "● AKTIF" : "○ NONAKTIF") + '</span></div></div>' +
+      audio +
+      '<div class="music-actions">' + (m.audio_path ? '<button class="btn" onclick="document.querySelector(\\'.music-audio-preview\\')?.play()">▶ Preview</button>' : "") + (m.is_active ? '<button class="btn danger" onclick="disableMusic()">Nonaktifkan musik</button>' : "") + '</div></section>' +
+      '<section class="music-form"><h3>Ganti musik</h3><p>Upload file baru jika ingin mengganti. Cover bersifat opsional; tanpa cover akan otomatis memakai ikon musik abu-abu.</p>' +
+      '<div class="field"><label>Judul lagu</label><input id="musicTitleInput" class="control" value="' + esc(m.title || "") + '" placeholder="Contoh: Semangat Pagi"></div>' +
+      '<div class="field"><label>Nama penyanyi</label><input id="musicArtistInput" class="control" value="' + esc(m.artist || "") + '" placeholder="Contoh: SDN Kalibaru 3"></div>' +
+      '<div class="field"><label>File musik ' + (m.audio_path ? "(opsional untuk mengganti)" : "*") + '</label><input id="musicAudioInput" class="control" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/webm"></div>' +
+      '<p class="music-help">Format: MP3, M4A, WAV, OGG, atau WEBM. Maksimal 25 MB.</p>' +
+      '<div class="field"><label>Cover lagu (opsional)</label><input id="musicCoverInput" class="control" type="file" accept="image/jpeg,image/png,image/webp"></div>' +
+      (m.cover_path ? '<label class="switch-row"><span><strong>Hapus cover lama</strong><small>Jika dicentang, box siswa memakai ikon musik abu-abu.</small></span><input id="musicRemoveCover" type="checkbox"></label>' : "") +
+      '<label class="switch-row"><span><strong>Musik aktif</strong><small>Tampilkan box musik di halaman utama siswa.</small></span><input id="musicActiveInput" type="checkbox" ' + (m.is_active ? "checked" : "") + '></label>' +
+      '<div id="musicFormError" class="import-errors hidden"></div><div class="music-save-row"><div class="left"><button class="btn" type="button" onclick="loadMusic()">↻ Muat ulang</button></div><button id="saveMusicBtn" class="btn primary" type="button" onclick="saveMusic()">Simpan pengaturan</button></div></section></div></div>';
+  };
+  window.saveMusic = async function() {
+    const button=document.getElementById("saveMusicBtn"), errorBox=document.getElementById("musicFormError");
+    if(!button)return;
+    button.disabled=true; errorBox.classList.add("hidden");
+    const old=musicConfig||{};
+    let newAudio=null,newCover=null;
+    try {
+      const title=document.getElementById("musicTitleInput").value.trim();
+      const artist=document.getElementById("musicArtistInput").value.trim();
+      const active=document.getElementById("musicActiveInput").checked;
+      const audioFile=document.getElementById("musicAudioInput").files[0];
+      const coverFile=document.getElementById("musicCoverInput").files[0];
+      const removeCover=document.getElementById("musicRemoveCover")?.checked;
+      if(active && !title) throw new Error("Judul lagu wajib diisi.");
+      if(active && !artist) throw new Error("Nama penyanyi wajib diisi.");
+      if(active && !audioFile && !old.audio_path) throw new Error("File musik wajib diunggah.");
+      if(audioFile)newAudio=await uploadMusicObject(audioFile,"audio");
+      if(coverFile)newCover=await uploadMusicObject(coverFile,"cover");
+      const audioPath=newAudio||old.audio_path||null;
+      const coverPath=removeCover?null:(newCover||old.cover_path||null);
+      await adminApi("saveMusic",{title,artist,audioPath,coverPath,isActive:active});
+      if(newAudio && old.audio_path) await deleteMusicObject(old.audio_path);
+      if((newCover||removeCover) && old.cover_path) await deleteMusicObject(old.cover_path);
+      await loadMusic();
+      alert("Pengaturan musik berhasil disimpan.");
+    } catch(error) {
+      if(newAudio) await deleteMusicObject(newAudio);
+      if(newCover) await deleteMusicObject(newCover);
+      errorBox.textContent=error.message||"Gagal menyimpan pengaturan musik.";
+      errorBox.classList.remove("hidden");
+    } finally { button.disabled=false; }
+  };
+  window.disableMusic = async function() {
+    if(!confirm("Nonaktifkan musik di halaman utama?"))return;
+    try { await adminApi("saveMusic",{title:musicConfig?.title||"",artist:musicConfig?.artist||"",audioPath:musicConfig?.audio_path||null,coverPath:musicConfig?.cover_path||null,isActive:false}); await loadMusic(); alert("Musik halaman utama dinonaktifkan."); }
+    catch(error){ alert(error.message); }
   };
 
   try { remember(JSON.parse(localStorage.getItem(SESSION_KEY) || 'null')); } catch (_) { remember(null); }
