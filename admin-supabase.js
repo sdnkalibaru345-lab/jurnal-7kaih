@@ -189,7 +189,7 @@
       '<section class="music-current"><h3>Musik halaman utama</h3><p>Musik ini tampil di bawah kotak “Halo, nama siswa” pada halaman utama jurnal. Siswa menekan Play untuk mulai mendengarkan.</p>' +
       '<div class="music-preview"><div class="music-preview-cover">' + cover + '</div><div><div class="music-preview-title">' + esc(m.title || "Belum ada judul") + '</div><div class="music-preview-artist">' + esc(m.artist || "Belum ada penyanyi") + '</div><span class="music-status ' + (m.is_active ? "on" : "off") + '">' + (m.is_active ? "● AKTIF" : "○ NONAKTIF") + '</span></div></div>' +
       audio +
-      '<div class="music-actions">' + (m.audio_path ? '<button class="btn" onclick="document.querySelector(\\'.music-audio-preview\\')?.play()">▶ Preview</button>' : "") + (m.is_active ? '<button class="btn danger" onclick="disableMusic()">Nonaktifkan musik</button>' : "") + '</div></section>' +
+      '<div class="music-actions">' + (m.audio_path ? '<span class="music-help">Gunakan pemutar audio di atas untuk preview.</span>' : "") + (m.is_active ? '<button class="btn danger" onclick="disableMusic()">Nonaktifkan musik</button>' : "") + '</div></section>' +
       '<section class="music-form"><h3>Ganti musik</h3><p>Upload file baru jika ingin mengganti. Cover bersifat opsional; tanpa cover akan otomatis memakai ikon musik abu-abu.</p>' +
       '<div class="field"><label>Judul lagu</label><input id="musicTitleInput" class="control" value="' + esc(m.title || "") + '" placeholder="Contoh: Semangat Pagi"></div>' +
       '<div class="field"><label>Nama penyanyi</label><input id="musicArtistInput" class="control" value="' + esc(m.artist || "") + '" placeholder="Contoh: SDN Kalibaru 3"></div>' +
