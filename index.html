@@ -114,10 +114,21 @@
     slideshowPage.innerHTML='<section class="slide-step">'+originalSlideshow.outerHTML+'<p class="step-note">Setelah melihat materi, lanjutkan ke jurnal harian.</p><div class="step-actions"><button class="secondary" onclick="showIntro()">← Kembali</button><button class="primary" onclick="showHome()">Selanjutnya →</button></div></section>';
     originalIntro.remove();originalSlideshow.remove();
     homePage.before(introPage,slideshowPage);homePage.classList.add('hidden');
-    function switchPage(target){[introPage,slideshowPage,homePage].forEach(page=>page.classList.toggle('hidden',page!==target));window.scrollTo(0,0)}
+    function stopBackgroundMusic(){
+      try{
+        audio.pause();
+        audio.currentTime=0;
+      }catch(_){}
+      stopMarquee();
+    }
+    function switchPage(target){
+      if(target!==homePage) stopBackgroundMusic();
+      [introPage,slideshowPage,homePage].forEach(page=>page.classList.toggle('hidden',page!==target));
+      window.scrollTo(0,0)
+    }
     function showIntro(){switchPage(introPage)}function showSlideshow(){switchPage(slideshowPage)}function showHome(){switchPage(homePage)}
     function enterApp(){login.classList.add('hidden');app.classList.remove('hidden');showIntro();render()}
-    function leaveApp(){app.classList.add('hidden');login.classList.remove('hidden');switchPage(introPage);window.scrollTo(0,0)}
+    function leaveApp(){stopBackgroundMusic();app.classList.add('hidden');login.classList.remove('hidden');switchPage(introPage);window.scrollTo(0,0)}
     const slideFrame=slideshowPage.querySelector('.slideshow-frame');
     slideFrame.innerHTML='<img id="canvaSlides" src="slides/slide-1.jpg" alt="Slideshow 7 Kebiasaan Anak Indonesia Hebat, halaman 1">';
     slideshowPage.querySelector('.slideshow-foot').remove();
@@ -272,7 +283,11 @@
   audio.addEventListener('play',resetButton);
   audio.addEventListener('pause',resetButton);
   audio.addEventListener('ended',resetButton);
-  window.addEventListener('beforeunload',()=>audio.pause());
+  window.addEventListener('beforeunload',stopBackgroundMusic);
+  window.addEventListener('pagehide',stopBackgroundMusic);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden') stopBackgroundMusic();
+  });
 
   loadBackgroundMusic();
 })();
