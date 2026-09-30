@@ -20,7 +20,7 @@
   <!-- music admin styles -->
 .music-admin{padding:20px 24px;overflow:auto;min-height:0;flex:1}.music-view .stats{display:none}.music-view .panel{margin-top:0}
 .music-admin-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;max-width:1120px;align-items:start}
-.music-current,.music-form{border:1px solid var(--line);border-radius:18px;background:#f8faf9;padding:22px;box-shadow:0 4px 14px #12382d08}
+.music-current,.music-form{border:1px solid var(--line);border-radius:18px;background:#f8faf9;padding:22px;box-shadow:0 4px 14px #12382d08}.music-current{max-height:calc(100dvh - 150px);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .music-current h3,.music-form h3{margin:0 0 5px;font-size:17px}
 .music-current p,.music-form>p{margin:0 0 10px;color:var(--muted);font-size:12px;line-height:1.45}
 .music-preview{display:flex;gap:10px;align-items:center;padding:9px;background:#fff;border:1px solid var(--line);border-radius:14px}
@@ -42,7 +42,7 @@
 .music-save-row{display:flex;justify-content:space-between;align-items:center;gap:9px;margin-top:3px;padding-top:8px;border-top:1px solid var(--line);position:sticky;bottom:0;background:#f8faf9;z-index:4}
 .music-save-row .btn.primary{min-width:170px;min-height:38px;font-size:12px;box-shadow:0 4px 12px #12382d18}.music-save-row .left{display:flex;gap:7px}
 @media(max-width:850px){.music-admin-grid{grid-template-columns:1fr}.music-form{grid-template-columns:1fr}.music-form h3,.music-form>p,.music-form .music-top-save,.music-form .field,.music-form>.music-help,.music-form>.switch-row,.music-form>#musicFormError,.music-form>.music-save-row{grid-column:1}}
-@media(max-width:560px){.music-admin{padding:12px}.music-current,.music-form{padding:17px}.music-form .music-top-save{justify-content:stretch}.music-form .music-top-save .btn{width:100%}}
+@media(max-width:560px){.music-admin{padding:12px}.music-current,.music-form{padding:17px}.music-current{max-height:calc(100dvh - 120px)}.music-form .music-top-save{justify-content:stretch}.music-form .music-top-save .btn{width:100%}}
 
 </style>
 </head>
