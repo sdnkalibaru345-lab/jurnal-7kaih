@@ -55,7 +55,7 @@
     <div id="musicArtist" class="music-artist">—</div>
   </div>
   <button id="musicToggle" class="music-control" type="button" aria-label="Putar musik" title="Putar musik">▶</button>
-  <audio id="backgroundMusic" preload="metadata"></audio>
+  <audio id="backgroundMusic" preload="none"></audio>
 </section><section class="intro"><div class="eyebrow">Pendahuluan</div><h2>Gerakan 7 Kebiasaan Anak Indonesia Hebat</h2><p>Dalam upaya membentuk generasi emas Indonesia pada tahun 2045, Kementerian Pendidikan Dasar dan Menengah (Kemdikdasmen) telah meluncurkan “Gerakan 7 Kebiasaan Anak Indonesia Hebat”. Gerakan ini bertujuan menanamkan kebiasaan positif pada anak-anak sejak dini, sehingga mereka tumbuh menjadi individu yang sehat, cerdas, dan berkarakter.</p></section><section class="slideshow"><div class="slideshow-frame"><iframe src="https://canva.link/qqa16i0aovz9sxq" title="Slideshow Gerakan 7 Kebiasaan Anak Indonesia Hebat" loading="lazy" allowfullscreen></iframe></div><div class="slideshow-foot"><p>Kenali Gerakan 7 Kebiasaan Anak Indonesia Hebat melalui slideshow ini.</p><a class="slideshow-link" href="https://canva.link/qqa16i0aovz9sxq" target="_blank" rel="noopener noreferrer">Buka slideshow ↗</a></div></section><div class="section-head"><div id="journalSectionLabel" class="eyebrow" style="color:#047857">Jurnal hari ini</div><h2>7 Kebiasaan Anak Indonesia Hebat</h2><p>Isi setiap aspek sesuai kegiatan yang benar-benar kamu lakukan.</p></div><section id="cards" class="cards"></section><section class="final"><div><h3>Pastikan semua aspek sudah diisi.</h3><p>Jawaban masih dapat diperiksa sebelum jurnal dikirim.</p></div><button id="send" class="primary" disabled onclick="showToast()">✓ Kirim jurnal hari ini</button></section></main></section>
   <div id="modalBack" class="modal-back hidden" onclick="backdrop(event)"><article id="modal" class="modal"></article></div><div id="toast" class="toast hidden"><strong>⭐ Tampilan pengiriman berhasil!</strong><small>Ini hanya simulasi. Belum ada data yang disimpan.</small></div>
   <script>
@@ -162,6 +162,7 @@
   const artist=document.getElementById('musicArtist');
   const toggle=document.getElementById('musicToggle');
   const audio=document.getElementById('backgroundMusic');
+  audio.preload='none';
   let musicUrl='', titleTrack=null, marqueeFrame=0, marqueeLast=0, marqueeDistance=0;
 
   function publicUrl(path){
@@ -229,7 +230,6 @@
       }
 
       musicUrl=publicUrl(config.audio_path);
-      audio.src=musicUrl;
       audio.loop=true;
 
       const musicTitleText=config.title||'Tanpa judul';
@@ -270,8 +270,13 @@
   toggle.addEventListener('click',async()=>{
     if(!musicUrl)return;
     try{
-      if(audio.paused) await audio.play();
-      else audio.pause();
+      if(audio.paused){
+        if(audio.src!==musicUrl){
+          audio.src=musicUrl;
+          audio.load();
+        }
+        await audio.play();
+      }else audio.pause();
     }catch(error){}
     resetButton();
   });
