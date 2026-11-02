@@ -4,6 +4,24 @@
   const SUPABASE_URL = 'https://jwqrojjyrcevyvcdlsjy.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_-fxedCs7T1lzP8hzAlyOYw_vJPLP68P';
   const SESSION_KEY = 'j7-student-session-v1';
+  const CACHE_PREFIX = 'j7-cache-v1:';
+  function readCache(key, maxAge = Infinity) {
+    try {
+      const item = JSON.parse(localStorage.getItem(CACHE_PREFIX + key) || 'null');
+      if (!item || !Array.isArray(item.value)) return null;
+      return Date.now() - item.savedAt <= maxAge ? item.value : null;
+    } catch (_) { return null; }
+  }
+  function readStaleCache(key) {
+    try {
+      const item = JSON.parse(localStorage.getItem(CACHE_PREFIX + key) || 'null');
+      return item && Array.isArray(item.value) ? item.value : null;
+    } catch (_) { return null; }
+  }
+  function writeCache(key, value) {
+    try { localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ savedAt: Date.now(), value })); } catch (_) {}
+  }
+
   const VAPID_PUBLIC_KEY = 'BBObhvP0qRN0yBAqChymWR2raH_uLc901SvNAyjkHuBnEAmkXHcbOaNzszTb7A41Q2yjF9mEIu1xdJJ2D3poT2k';
   const draftsByDate = {};
   const submittedAnswersByDate = {};
@@ -532,17 +550,32 @@
     nameInput.innerHTML = `<option value="">${classId ? 'Memuat nama siswa...' : 'Pilih kelas terlebih dahulu'}</option>`;
     setLoginError();
     if (!classId) return;
+    const cacheKey = 'names:' + classId;
+    const cachedNames = readCache(cacheKey, 6 * 60 * 60 * 1000);
+    if (cachedNames) {
+      renderStudentNames(cachedNames);
+      return;
+    }
     try {
       const data = await studentApi('names', { classId }, null);
       const names = data.names || [];
-      nameInput.innerHTML = '<option value="">Pilih nama siswa</option>' + names
-        .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
-      nameInput.disabled = names.length === 0;
-      if (!names.length) setLoginError('Belum ada siswa aktif pada kelas ini.');
+      writeCache(cacheKey, names);
+      renderStudentNames(names);
     } catch (error) {
-      nameInput.innerHTML = '<option value="">Nama siswa gagal dimuat</option>';
-      setLoginError(error.message);
+      const staleNames = readStaleCache(cacheKey);
+      if (staleNames) renderStudentNames(staleNames);
+      else {
+        nameInput.innerHTML = '<option value="">Nama siswa gagal dimuat</option>';
+        setLoginError(error.message);
+      }
     }
+  }
+
+  function renderStudentNames(names) {
+    nameInput.innerHTML = '<option value="">Pilih nama siswa</option>' + names
+      .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    nameInput.disabled = names.length === 0;
+    if (!names.length) setLoginError('Belum ada siswa aktif pada kelas ini.');
   }
 
   function escapeHtml(value) {
@@ -868,14 +901,27 @@
   };
 
   async function start() {
-    try {
-      const boot = await studentApi('bootstrap', {}, null);
-      classes = boot.classes || [];
+    const cachedClasses = readCache('classes', 12 * 60 * 60 * 1000);
+    if (cachedClasses) {
+      classes = cachedClasses;
       populateClasses();
-    } catch (error) {
-      classSelect.innerHTML = '<option value="">Kelas gagal dimuat</option>';
-      setLoginError('Koneksi ke database gagal. Muat ulang halaman.');
-      return;
+    } else {
+      try {
+        const boot = await studentApi('bootstrap', {}, null);
+        classes = boot.classes || [];
+        writeCache('classes', classes);
+        populateClasses();
+      } catch (error) {
+        const staleClasses = readStaleCache('classes');
+        if (staleClasses) {
+          classes = staleClasses;
+          populateClasses();
+        } else {
+          classSelect.innerHTML = '<option value="">Kelas gagal dimuat</option>';
+          setLoginError('Koneksi ke database gagal. Muat ulang halaman.');
+          return;
+        }
+      }
     }
     if (!session?.token) return;
     try {
