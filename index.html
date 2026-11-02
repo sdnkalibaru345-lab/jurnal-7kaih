@@ -216,14 +216,30 @@
   }
 
   async function loadBackgroundMusic(){
+    let config=null;
+    const musicCacheKey='j7-background-music-config-v1';
     try{
-      const response=await fetch(SUPABASE_URL+'/functions/v1/student-api',{
-        method:'POST',
-        headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
-        body:JSON.stringify({action:'music'})
-      });
-      if(!response.ok) throw new Error('music config request failed');
-      const payload=await response.json(), config=payload.music;
+      const cached=JSON.parse(localStorage.getItem(musicCacheKey)||'null');
+      if(cached&&cached.value&&Date.now()-cached.savedAt<24*60*60*1000){
+        config=cached.value;
+      }else{
+        const response=await fetch(SUPABASE_URL+'/functions/v1/student-api',{
+          method:'POST',
+          headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+          body:JSON.stringify({action:'music'})
+        });
+        if(!response.ok) throw new Error('music config request failed');
+        const payload=await response.json();
+        config=payload.music;
+        try{localStorage.setItem(musicCacheKey,JSON.stringify({savedAt:Date.now(),value:config}));}catch(_){}
+      }
+    }catch(error){
+      try{
+        const cached=JSON.parse(localStorage.getItem(musicCacheKey)||'null');
+        config=cached?.value||null;
+      }catch(_){}
+    }
+    try{
       if(!config||!config.is_active||!config.audio_path){
         player.classList.add('hidden');
         return;
@@ -299,6 +315,6 @@
 
   loadBackgroundMusic();
 })();
-</script><script src="student-supabase.js?v=14"></script>
+</script><script src="student-supabase.js?v=15"></script>
 </body>
 </html>
