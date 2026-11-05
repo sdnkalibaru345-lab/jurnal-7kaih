@@ -102,6 +102,7 @@
       window.scrollTo(0,0)
     }
     function showIntro(){switchPage(introPage)}function showSlideshow(){switchPage(slideshowPage)}function showHome(){switchPage(homePage)}
+    window.showIntro=showIntro;window.showSlideshow=showSlideshow;window.showHome=showHome;
     function enterApp(){login.classList.add('hidden');app.classList.remove('hidden');showIntro();render()}
     function leaveApp(){stopBackgroundMusic();app.classList.add('hidden');login.classList.remove('hidden');switchPage(introPage);window.scrollTo(0,0)}
     const slideFrame=slideshowPage.querySelector('.slideshow-frame');
