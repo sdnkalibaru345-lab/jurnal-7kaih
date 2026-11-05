@@ -635,21 +635,30 @@
     mode.textContent = `Kelas ${student.className}`;
     login.classList.add('hidden');
     app.classList.remove('hidden');
-    selectJournalDate(activeDateKey);
-    // Fallback aman: jangan biarkan area aplikasi kosong jika halaman pengantar gagal diinisialisasi.
+    // Tampilkan slideshow terlebih dahulu. Kegagalan render jurnal tidak boleh
+    // menghentikan alur masuk atau membuat seluruh halaman tetap tersembunyi.
     try {
       if (typeof window.showSlideshow === 'function') {
         window.showSlideshow();
       } else {
-        document.querySelector('#app main.content')?.classList.remove('hidden');
+        throw new Error('Fungsi slideshow belum tersedia.');
       }
     } catch (pageError) {
-      console.error('Gagal menampilkan halaman pengantar 7 KAIH:', pageError);
+      console.error('Gagal menampilkan slideshow 7 KAIH:', pageError);
       document.querySelector('#introPage')?.classList.add('hidden');
       document.querySelector('#slideshowPage')?.classList.add('hidden');
       document.querySelector('#app main.content')?.classList.remove('hidden');
     }
-    refreshReminderState();
+    try {
+      selectJournalDate(activeDateKey);
+    } catch (journalError) {
+      console.error('Gagal menyiapkan tanggal jurnal:', journalError);
+    }
+    try {
+      refreshReminderState();
+    } catch (reminderError) {
+      console.error('Gagal memperbarui pengingat jurnal:', reminderError);
+    }
   }
 
   async function loginStudent() {
