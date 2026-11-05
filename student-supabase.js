@@ -638,8 +638,8 @@
     selectJournalDate(activeDateKey);
     // Fallback aman: jangan biarkan area aplikasi kosong jika halaman pengantar gagal diinisialisasi.
     try {
-      if (typeof window.showIntro === 'function') {
-        window.showIntro();
+      if (typeof window.showSlideshow === 'function') {
+        window.showSlideshow();
       } else {
         document.querySelector('#app main.content')?.classList.remove('hidden');
       }
