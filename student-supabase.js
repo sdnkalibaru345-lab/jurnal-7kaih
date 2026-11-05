@@ -636,7 +636,19 @@
     login.classList.add('hidden');
     app.classList.remove('hidden');
     selectJournalDate(activeDateKey);
-    showIntro();
+    // Fallback aman: jangan biarkan area aplikasi kosong jika halaman pengantar gagal diinisialisasi.
+    try {
+      if (typeof window.showIntro === 'function') {
+        window.showIntro();
+      } else {
+        document.querySelector('#app main.content')?.classList.remove('hidden');
+      }
+    } catch (pageError) {
+      console.error('Gagal menampilkan halaman pengantar 7 KAIH:', pageError);
+      document.querySelector('#introPage')?.classList.add('hidden');
+      document.querySelector('#slideshowPage')?.classList.add('hidden');
+      document.querySelector('#app main.content')?.classList.remove('hidden');
+    }
     refreshReminderState();
   }
 
