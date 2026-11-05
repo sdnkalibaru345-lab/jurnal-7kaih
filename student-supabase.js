@@ -635,30 +635,39 @@
     mode.textContent = `Kelas ${student.className}`;
     login.classList.add('hidden');
     app.classList.remove('hidden');
-    // Tampilkan slideshow terlebih dahulu. Kegagalan render jurnal tidak boleh
-    // menghentikan alur masuk atau membuat seluruh halaman tetap tersembunyi.
-    try {
-      if (typeof window.showSlideshow === 'function') {
-        window.showSlideshow();
-      } else {
-        throw new Error('Fungsi slideshow belum tersedia.');
+
+    // Paksa tampilkan slideshow secara langsung agar tidak bergantung pada
+    // fungsi navigasi inline yang mungkin gagal atau belum terinisialisasi.
+    const slideshow = document.getElementById('slideshowPage');
+    const intro = document.getElementById('introPage');
+    const journal = document.querySelector('#app main.content');
+    if (slideshow) {
+      intro?.classList.add('hidden');
+      journal?.classList.add('hidden');
+      slideshow.classList.remove('hidden');
+      slideshow.style.display = 'grid';
+      const image = slideshow.querySelector('#canvaSlides');
+      if (image) {
+        image.src = 'slides/slide-1.jpg';
+        image.alt = 'Slideshow 7 Kebiasaan Anak Indonesia Hebat, halaman 1';
       }
-    } catch (pageError) {
-      console.error('Gagal menampilkan slideshow 7 KAIH:', pageError);
-      document.querySelector('#introPage')?.classList.add('hidden');
-      document.querySelector('#slideshowPage')?.classList.add('hidden');
-      document.querySelector('#app main.content')?.classList.remove('hidden');
+      const counter = slideshow.querySelector('#slideNumber');
+      if (counter) counter.textContent = '1';
+      const previous = slideshow.querySelector('#prevSlide');
+      const next = slideshow.querySelector('#nextSlide');
+      if (previous) previous.disabled = true;
+      if (next) next.disabled = false;
+    } else {
+      // Jika halaman slideshow gagal dibuat, tampilkan jurnal agar aplikasi
+      // tidak pernah berhenti pada layar kosong.
+      journal?.classList.remove('hidden');
+      console.error('Elemen slideshowPage tidak ditemukan.');
     }
-    try {
-      selectJournalDate(activeDateKey);
-    } catch (journalError) {
-      console.error('Gagal menyiapkan tanggal jurnal:', journalError);
-    }
-    try {
-      refreshReminderState();
-    } catch (reminderError) {
-      console.error('Gagal memperbarui pengingat jurnal:', reminderError);
-    }
+
+    try { selectJournalDate(activeDateKey); }
+    catch (journalError) { console.error('Gagal menyiapkan tanggal jurnal:', journalError); }
+    try { refreshReminderState(); }
+    catch (reminderError) { console.error('Gagal memperbarui pengingat jurnal:', reminderError); }
   }
 
   async function loginStudent() {
